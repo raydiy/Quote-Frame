@@ -1,0 +1,31 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    %HTMLHEAD%
+</head>
+<body>
+    %MENU%
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12 col-md-12">
+
+                <div class="card">
+                    <h3 class="section">Add new Quote</h3>
+
+                    <form action="/save" class="section dark" method="POST">
+                        <div class="input-group vertical">
+                            <label for="quote">Quote</label>
+                            <textarea rows="6" id="quote" name="quote" placeholder="New Quote here ..."></textarea>
+                            <label for="author">Author</label>
+                            <input type="text" id="author" name="author" placeholder="Author here ... (optional)" />
+                            <input type="hidden" id="new" name="new" value="true" />
+                            <input type="submit" class="primary" style="flex-basis: auto; height: 42px;" value="Save">
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</body>
+</html>
