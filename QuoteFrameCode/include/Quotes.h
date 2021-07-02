@@ -233,7 +233,6 @@ void Quotes::AddQuotesToJsonDocument(DynamicJsonDocument &doc)
             JsonObject newQuote = quoteArray.createNestedObject();
             newQuote["txt"] = q[i].txt;
             newQuote["author"] = q[i].author;
-            newQuote["count"] = q[i].count;
         }
     }
 }
@@ -340,7 +339,7 @@ void Quotes::ImportQuotesFromJSONString(const String& jsonString, bool replace)
             {
                 String txt = value["txt"];
                 String author = value["author"];
-                byte count = value["count"];
+                byte count = 0;
 
                 if (txt != "")
                 {
