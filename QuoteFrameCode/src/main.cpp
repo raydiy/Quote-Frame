@@ -66,6 +66,7 @@ String processor(const String& var)
         q += "<a class=\"button col-sm col-md\" href=\"/reboot\">&#x21bb</a>";
         q += "<a class=\"button col-sm col-md\" href=\"/imexport\"><span class=\"icon-upload\"></span></a>";
         q += "<a class=\"button col-sm col-md\" href=\"/settings\">&#9881</a>";
+
         q += "</header>";
         return q;
     }
@@ -370,6 +371,7 @@ void HandleRequestImExport(AsyncWebServerRequest *request)
             Quotes::ImportQuotesFromJSONString(importJSON, false);
         }
 
+        Quotes::ResetQuoteCounter();
         Quotes::SaveQuotesToSPIFFS();
 
         // immediate redirect to home 
@@ -483,6 +485,7 @@ void HandleRequestSaveQuote(AsyncWebServerRequest *request)
 
     String quoteText;
     String quoteAuthor;
+    bool isNew = false;
 
     // if a quote text is sent
     if (request->hasParam("quote", true)) 
@@ -491,6 +494,8 @@ void HandleRequestSaveQuote(AsyncWebServerRequest *request)
         if (request->hasParam("new", true)) 
         {
             QUOTEID = Quotes::GetNextFreeQuoteID();
+            isNew = true;
+        
             Serial.print("New QUOTEID is: ");
             Serial.println(QUOTEID);
         }
@@ -518,6 +523,7 @@ void HandleRequestSaveQuote(AsyncWebServerRequest *request)
             Quotes::q[QUOTEID].txt = quoteText;
             Quotes::q[QUOTEID].author = quoteAuthor;
 
+            if ( isNew ){ Quotes::ResetQuoteCounter(); }
             Quotes::SaveQuotesToSPIFFS();
 
             // immediatley redirect

@@ -22,7 +22,8 @@ String linesOfText[10];
 
 typedef struct {
     String txt;
-    String author;   
+    String author;
+    byte count;   
 } quote;
 
 
@@ -38,6 +39,7 @@ class Quotes
 
         static uint16_t GetNumberOfQuotes();
         static uint16_t GetNextFreeQuoteID();
+
         static void DeleteQuote(uint16_t quoteID);
         static void DeleteAllQuotes();
         static void AddQuotesToJsonDocument(DynamicJsonDocument &doc);
@@ -45,7 +47,9 @@ class Quotes
         static void LoadQuotesFromSPIFFS();
         static String ExportQuotesToJSONString();
         static void ImportQuotesFromJSONString(const String& jsonString, bool replace);
+        static byte GetLowestCountValue();
         static quote GetRandomQuote();
+        static void ResetQuoteCounter();
 };
 
 
@@ -115,11 +119,13 @@ void Quotes::DeleteQuote(uint16_t quoteID)
     {
         q[i-1].txt = q[i].txt;
         q[i-1].author = q[i].author;
+        q[i-1].count = q[i].count;
     }
 
     // clear the very last quote
     q[cntMaxQuotes-1].txt = "";
     q[cntMaxQuotes-1].author = "";
+    q[cntMaxQuotes-1].count = 0;
 
     Quotes::SaveQuotesToSPIFFS();
 }
@@ -137,6 +143,7 @@ void Quotes::DeleteAllQuotes()
     {
         q[i].txt = "";
         q[i].author = "";
+        q[i].count = 0;
     }
 }
 
@@ -193,8 +200,10 @@ void Quotes::LoadQuotesFromSPIFFS()
             {
                 const char* txt = value["txt"];
                 const char* author = value["author"];
+                const byte count = value["count"]; 
                 q[cnt].txt = txt;
                 q[cnt].author = author;
+                q[cnt].count = count;
                 cnt++;
             }
         }
@@ -224,6 +233,7 @@ void Quotes::AddQuotesToJsonDocument(DynamicJsonDocument &doc)
             JsonObject newQuote = quoteArray.createNestedObject();
             newQuote["txt"] = q[i].txt;
             newQuote["author"] = q[i].author;
+            newQuote["count"] = q[i].count;
         }
     }
 }
@@ -330,11 +340,13 @@ void Quotes::ImportQuotesFromJSONString(const String& jsonString, bool replace)
             {
                 String txt = value["txt"];
                 String author = value["author"];
+                byte count = value["count"];
 
                 if (txt != "")
                 {
                     q[index].txt = txt;
                     q[index].author = author;
+                    q[index].count = count;
                     cnt++;
                 }else{
                     Serial.println(F("Quote txt is empty  - SKIP"));
@@ -352,6 +364,30 @@ void Quotes::ImportQuotesFromJSONString(const String& jsonString, bool replace)
     Serial.println(cnt);
 }
 
+
+/**************************************************
+* GetLowestCountValue()
+* iteraet all quotes and get the lowest count value
+*/
+byte Quotes::GetLowestCountValue()
+{
+    byte result = 255;
+
+    for (size_t i = 0; i < cntMaxQuotes; i++)
+    {
+        if (q[i].txt != "")
+        {
+            if ( q[i].count < result )
+                result = q[i].count;
+            
+            if (result == 0)
+                return 0;
+        }
+    }
+
+    return result;
+}
+
 /**************************************************
 * GetRandomQuote()
 */
@@ -359,22 +395,129 @@ quote Quotes::GetRandomQuote()
 {
     Serial.println("Quotes::GetRandomQuote()");
     quote result;
+    uint16_t randomID = 0;
+    uint16_t numberOfQuotes = Quotes::GetNumberOfQuotes();
+    uint16_t maxID = numberOfQuotes;
 
-    uint16_t maxID = Quotes::GetNumberOfQuotes();
-    uint16_t randomID = random(0, maxID);
-
-    //Serial.print("maxID: ");
-    //Serial.println(maxID);
-
-    if ( maxID > 0 )
+    // NO QUOTES
+    // if no quotes
+    if ( numberOfQuotes == 0 )
     {
-        result = Quotes::q[randomID];
-    }else{
         result.txt = "No quotes found.\nRestart in config mode\nand add some quotes!";
     }
 
-    //Serial.print("random quote: ");
-    Serial.println(result.txt);
+    // 1 QUOTES
+    // if we only have one quote, display it
+    else if ( numberOfQuotes == 1 )
+    {
+        randomID = 0;
+    }
 
+    // 2 QUOTES
+    // if we have two quotes, just display the on that is NOT the LASTQUOTEID
+    else if ( numberOfQuotes == 2 )
+    {
+        if ( LASTQUOTEID == 0 )
+        {
+            randomID = 1;
+        }else{
+            randomID = 0;
+        }
+
+        LASTQUOTEID = randomID;
+    }
+
+    /* REAL RANOM ATTEMPT
+
+    // 3+ QUOTES
+    // if we have more than three quotes then chose a quote which has the lowest count value ans is NOT the LASTQUOTEID
+    else if ( numberOfQuotes >= 3 )
+    {
+        // get the lowest count value
+        byte lowestCountValue = Quotes::GetLowestCountValue();
+        uint attempts = 0;
+
+        do
+        {
+            attempts++;
+
+            // 2. create a random index value
+            randomID = random(0, maxID);
+
+            // do not display the same quotes two times
+            if ( randomID != LASTQUOTEID)
+            {
+                // 3. if quote with random index count value is not = lowest value then repeat from step 2.
+                if ( Quotes::q[randomID].count == lowestCountValue )
+                {
+                    Serial.println("random quote found");
+                    LASTQUOTEID = randomID;
+                    break;
+                }
+            }
+
+            if ( attempts > 6500000)
+            {
+                Quotes::ResetQuoteCounter();
+                LASTQUOTEID = randomID;
+                break;
+            }
+        } while ( true );
+        
+
+        // if count is 255, then reset all count values to zero!!
+        // casue the maximum value for count is 255
+        if ( Quotes::q[randomID].count >= 255 ) { Quotes::ResetQuoteCounter(); }
+
+        // raise counter of the choosen quopte
+        Quotes::q[randomID].count = Quotes::q[randomID].count + 1;
+
+        // save quotes due to new counter value
+        Quotes::SaveQuotesToSPIFFS();
+
+        Serial.print("attempts: ");
+        Serial.println(String(attempts))
+    }
+    */
+
+    // 3+ QUOTES
+    // if we have more than three quotes then chose the next quote after LASTQUOTEID
+    else if ( numberOfQuotes >= 3 )
+    {
+        randomID = LASTQUOTEID + 1;
+        if ( randomID >= maxID )
+            randomID = 0;
+
+        // update LASTQUOTEID
+        LASTQUOTEID = randomID;
+        Settings::last_quote_id = LASTQUOTEID;
+
+        // save settings due to change of LASTQUOTEID
+        Settings::SaveToSPIFFS();
+    }
+
+    result = Quotes::q[randomID];
+
+    Serial.print("last quote id: ");
+    Serial.println(String(LASTQUOTEID));
+    Serial.print("random quote: ");
+    Serial.println(result.txt);
+    Serial.print("count: ");
+    Serial.println(result.count);
+    
     return result;
 }
+
+
+/**************************************************
+* Quotes::ResetQuoteCounter()
+* sets all count of each quote to 0
+*/
+void Quotes::ResetQuoteCounter()
+{
+    for (size_t i = 0; i < cntMaxQuotes; i++)
+    {
+        q[i].count = 0;
+    }
+}
+

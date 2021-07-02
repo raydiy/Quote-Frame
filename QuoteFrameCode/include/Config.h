@@ -3,11 +3,12 @@
 const char *AP_SSID = "QuoteFrame";         // the SSID of the gateway
 const char *AP_PASSWORD = "12345678";       // tha password of the gateway
 
-uint16_t QUOTEID = 0;                       // start displaying at quote id 0
+uint16_t QUOTEID = 0;                       // a global qupote id use by the setings to form for deleting and editing quotes
+uint16_t LASTQUOTEID = 0;                   // the last quote id that has been displayed
 bool EXPORT_TO_JSON = false;                // needed for the JSON export in config mode
 
 
-uint TIME_TO_DEEPSLEEP = 60*2;          // in seconds, how long after a new quote gets loaded. 60*60*24 would be once per day. 60 would be every minute
+uint TIME_TO_DEEPSLEEP = 60*2;              // in seconds, how long after a new quote gets loaded. 60*60*24 would be once per day. 60 would be every minute
 #define TOUCH_THRESHOLD 20                  // Define touch sensitivity. Greater the value, more the sensitivity.
 #define TOUCH_PIN 32                        // the pin of the touch sensor
 #define SCREEN_ROTATION 0                   // if for some reasons you want to rotate the display
@@ -21,6 +22,12 @@ IPAddress gateway(192,168,4,1);
 IPAddress subnet(255,255,255,0);
 
 
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+// CLASS DECLARATION
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 class Settings 
 {
     public:
@@ -29,17 +36,25 @@ class Settings
         static uint16_t interval_hours;
         static uint16_t interval_days;
         static byte inactivity_restart;
+        static uint16_t last_quote_id;
 
         static void SaveToSPIFFS();
         static void LoadFromSPIFFS();
         static uint GetIntervallInSeconds();
 };
 
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+// CLASS DEFINITIONS
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 uint16_t Settings::interval_seconds = 0;
 uint16_t Settings::interval_minutes = 2;
 uint16_t Settings::interval_hours = 0;
 uint16_t Settings::interval_days = 0;
 byte Settings::inactivity_restart = 5;
+uint16_t Settings::last_quote_id = 0;
 
 
 /**************************************************
@@ -60,6 +75,7 @@ void Settings::SaveToSPIFFS()
     doc["interval_hours"]       = Settings::interval_hours;
     doc["interval_days"]        = Settings::interval_days;
     doc["inactivity_restart"]   = Settings::inactivity_restart;
+    doc["last_quote_id"]        = Settings::last_quote_id;
 
     // serialize the object and send the result to Serial
     serializeJsonPretty(doc, Serial);
@@ -88,7 +104,7 @@ void Settings::LoadFromSPIFFS()
     Serial.println(F("Settings::LoadFromSPIFFS()"));
 
     // create JsonDocument
-    StaticJsonDocument<192> doc;
+    StaticJsonDocument<256> doc;
 
     // check if file exist in SPIFFS
     Serial.println(F("check if file exist"));
@@ -124,6 +140,7 @@ void Settings::LoadFromSPIFFS()
         Settings::interval_hours        = doc["interval_hours"].as<uint16_t>();
         Settings::interval_days         = doc["interval_days"].as<uint16_t>();
         Settings::inactivity_restart    = doc["inactivity_restart"].as<byte>();
+        Settings::last_quote_id         = doc["last_quote_id"].as<uint16_t>();
 
         Serial.println( F("#Settings loaded from SPIFFS: ") );
         Serial.print( "interval_seconds: " );
@@ -141,9 +158,12 @@ void Settings::LoadFromSPIFFS()
         Serial.print( "inactivity_restart: " );
         Serial.print( String(Settings::inactivity_restart) );
         Serial.println("");
+        Serial.print( "last_quote_id: " );
+        Serial.print( String(Settings::last_quote_id) );
+        Serial.println("");
 
         TIME_TO_DEEPSLEEP = Settings::GetIntervallInSeconds();
-        Serial.println(String(TIME_TO_DEEPSLEEP));
+        LASTQUOTEID = Settings::last_quote_id;
 
     }else{
         Serial.println(F("file settings.json does NOT exist. Using default values."));
