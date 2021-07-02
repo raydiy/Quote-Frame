@@ -7,7 +7,7 @@ uint16_t QUOTEID = 0;                       // start displaying at quote id 0
 bool EXPORT_TO_JSON = false;                // needed for the JSON export in config mode
 
 
-#define TIME_TO_DEEPSLEEP 60*2              // in seconds, how long after a new quote gets loaded. 60*60*24 would be once per day. 60 would be every minute
+uint TIME_TO_DEEPSLEEP = 60*2;          // in seconds, how long after a new quote gets loaded. 60*60*24 would be once per day. 60 would be every minute
 #define TOUCH_THRESHOLD 20                  // Define touch sensitivity. Greater the value, more the sensitivity.
 #define TOUCH_PIN 32                        // the pin of the touch sensor
 #define SCREEN_ROTATION 0                   // if for some reasons you want to rotate the display
@@ -19,3 +19,157 @@ uint8_t MODE = MODE_FRAME;                  // MODE does contain the current act
 IPAddress local_IP(192,168,4,1);            // the default IP adress you find the gateway at 
 IPAddress gateway(192,168,4,1);
 IPAddress subnet(255,255,255,0);
+
+
+class Settings 
+{
+    public:
+        static uint16_t interval_seconds;
+        static uint16_t interval_minutes;
+        static uint16_t interval_hours;
+        static uint16_t interval_days;
+        static byte inactivity_restart;
+
+        static void SaveToSPIFFS();
+        static void LoadFromSPIFFS();
+        static uint GetIntervallInSeconds();
+};
+
+uint16_t Settings::interval_seconds = 0;
+uint16_t Settings::interval_minutes = 2;
+uint16_t Settings::interval_hours = 0;
+uint16_t Settings::interval_days = 0;
+byte Settings::inactivity_restart = 5;
+
+
+/**************************************************
+* SaveToSPIFFS()
+* The current Settings gets converted to a JSON string which gets written 
+* to SPIFFS
+*/
+void Settings::SaveToSPIFFS()
+{
+    // write Settings to SPIFFS file stream
+
+    Serial.println(F("Settings::SaveToSPIFFS()"));
+
+    StaticJsonDocument<96> doc;
+
+    doc["interval_seconds"]     = Settings::interval_seconds;
+    doc["interval_minutes"]     = Settings::interval_minutes;
+    doc["interval_hours"]       = Settings::interval_hours;
+    doc["interval_days"]        = Settings::interval_days;
+    doc["inactivity_restart"]   = Settings::inactivity_restart;
+
+    // serialize the object and send the result to Serial
+    serializeJsonPretty(doc, Serial);
+    Serial.println(F(""));
+
+    File fileSettings = SPIFFS.open("/settings.json", "w");
+
+    // Serialize JSON to file
+    if (serializeJson(doc, fileSettings) == 0) {
+        Serial.println(F("Failed to write to file"));
+    }
+      
+    // Close the file
+    fileSettings.close();
+
+    Serial.println(F("Settings saved to SPIFFS"));
+}
+
+
+/**************************************************
+* LoadFromSPIFFS()
+* Loads all the settings from a /settings.json file
+*/
+void Settings::LoadFromSPIFFS()
+{
+    Serial.println(F("Settings::LoadFromSPIFFS()"));
+
+    // create JsonDocument
+    StaticJsonDocument<192> doc;
+
+    // check if file exist in SPIFFS
+    Serial.println(F("check if file exist"));
+    bool doesFileExist = SPIFFS.exists("/settings.json");
+
+    if (doesFileExist)
+    {
+        Serial.println(F("file does exist"));
+
+        // open settings file
+        File fileSettings = SPIFFS.open("/settings.json", "r");
+
+        if (!fileSettings) 
+        {
+            Serial.println(F("Failed to open file for reading"));
+            return;
+        }
+
+        DeserializationError error = deserializeJson(doc, fileSettings);
+        if (error) {
+            Serial.print(F("deserializeJson() failed: "));
+            Serial.println(error.c_str());
+            return;
+        }
+
+        // close the file
+        fileSettings.close();
+
+
+        // get the json s´data that contains all the quotes
+        Settings::interval_seconds      = doc["interval_seconds"].as<uint16_t>();
+        Settings::interval_minutes      = doc["interval_minutes"].as<uint16_t>();
+        Settings::interval_hours        = doc["interval_hours"].as<uint16_t>();
+        Settings::interval_days         = doc["interval_days"].as<uint16_t>();
+        Settings::inactivity_restart    = doc["inactivity_restart"].as<byte>();
+
+        Serial.println( F("#Settings loaded from SPIFFS: ") );
+        Serial.print( "interval_seconds: " );
+        Serial.print( String(Settings::interval_seconds) );
+        Serial.println("");
+        Serial.print( "interval_minutes: " );
+        Serial.print( String(Settings::interval_minutes) );
+        Serial.println("");
+        Serial.print( "interval_hours: " );
+        Serial.print( String(Settings::interval_hours) );
+        Serial.println("");
+        Serial.print( "interval_days: " );
+        Serial.print( String(Settings::interval_days) );
+        Serial.println("");
+        Serial.print( "inactivity_restart: " );
+        Serial.print( String(Settings::inactivity_restart) );
+        Serial.println("");
+
+        TIME_TO_DEEPSLEEP = Settings::GetIntervallInSeconds();
+        Serial.println(String(TIME_TO_DEEPSLEEP));
+
+    }else{
+        Serial.println(F("file settings.json does NOT exist. Using default values."));
+    }
+}
+
+
+/**************************************************
+* GetIntervallInSeconds()
+* Returns the current intervall settings to seconds
+*/
+uint Settings::GetIntervallInSeconds()
+{
+    Serial.println(F("Settings::GetIntervallInSeconds()"));
+
+    if ( Settings::interval_seconds > 0 ) 
+        return Settings::interval_seconds;
+    
+    if ( Settings::interval_minutes > 0 ) 
+        return Settings::interval_minutes * 60;
+
+    if ( Settings::interval_hours > 0 ) 
+        return Settings::interval_hours * 60 * 60;
+
+    if ( Settings::interval_days > 0 ) 
+        return Settings::interval_days * 24 * 60 * 60;
+
+    return 0;
+}

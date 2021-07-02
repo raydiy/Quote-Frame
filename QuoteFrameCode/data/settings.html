@@ -1,0 +1,35 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    %HTMLHEAD%
+</head>
+<body>
+    %MENU%
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12 col-md-12">
+
+                <div class="card">
+                    <h3 class="section">Settings</h3>
+
+                    <form action="/settings" method="POST">
+                        <div class="input-group vertical">
+                            <label for="author">Quote Interval</label>
+                            <input type="number" id="interval_value" name="interval_value" min="1" max="59" value="%SETTINGS_INTERVAL_VALUE%" />
+                            <select name="interval_unit">
+                                <option value="0" %SETTINGS_INTERVAL_SECONDS%">Seconds</option>
+                                <option value="1" %SETTINGS_INTERVAL_MINUTES%>Minutes</option>
+                                <option value="2" %SETTINGS_INTERVAL_HOURS%>Hours</option>
+                                <option value="3" %SETTINGS_INTERVAL_DAYS%>Days</option>
+                            </select>
+                            <input type="hidden" id="save" name="save" value="true" />
+                            <input type="submit" class="primary" style="flex-basis: auto; height: 42px;" value="Save">
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</body>
+</html>

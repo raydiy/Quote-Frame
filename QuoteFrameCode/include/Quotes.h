@@ -147,7 +147,7 @@ void Quotes::DeleteAllQuotes()
 */
 void Quotes::LoadQuotesFromSPIFFS()
 {
-    Serial.println(F("LoadQuotesFromSPIFFS()"));
+    Serial.println(F("Quotes::LoadQuotesFromSPIFFS()"));
 
     // create JsonDocument
     DynamicJsonDocument doc(ESP.getMaxAllocHeap());
@@ -202,7 +202,7 @@ void Quotes::LoadQuotesFromSPIFFS()
         Serial.print("#Quotes loaded from SPIFFS: ");
         Serial.println(arr.size());
     }else{
-        Serial.println(F("file does NOT exist!"));
+        Serial.println(F("file quotes.json does NOT exist!"));
     }
 }
 

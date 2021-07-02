@@ -29,6 +29,7 @@ void HandleRequestDeleteQuote(AsyncWebServerRequest *request);
 void HandleRequestEditQuote(AsyncWebServerRequest *request);
 void HandleRequestSaveQuote(AsyncWebServerRequest *request);
 void HandleRequestReboot(AsyncWebServerRequest *request);
+void HandleRequestSettings(AsyncWebServerRequest *request);
 void HandleRequestImExport(AsyncWebServerRequest *request);
 void DeepSleep_Begin();
 void Touch_Callback();
@@ -49,7 +50,7 @@ String processor(const String& var)
     if(var == "HTMLHEAD")
     {
         String q = "";
-        q += "<title>SPRYGGKLOPPA</title>";
+        q += "<title>QuoteFrame</title>";
         q += "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">";
         q += "<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">";
         q += "<link rel=\"icon\" href=\"data:,\">";
@@ -64,7 +65,7 @@ String processor(const String& var)
         q += "<a class=\"button col-sm col-md\" href=\"/new\">&#10133;</a>";
         q += "<a class=\"button col-sm col-md\" href=\"/reboot\">&#x21bb</a>";
         q += "<a class=\"button col-sm col-md\" href=\"/imexport\"><span class=\"icon-upload\"></span></a>";
-        q += "<a class=\"button col-sm col-md\" href=\"/help\">&#10068</a>";
+        q += "<a class=\"button col-sm col-md\" href=\"/settings\">&#9881</a>";
         q += "</header>";
         return q;
     }
@@ -117,6 +118,36 @@ String processor(const String& var)
     {
         return String(QUOTEID);
     }
+
+    // SETTINGS PAGE
+    else if(var == "SETTINGS_INTERVAL_VALUE")
+    {
+        if ( Settings::interval_seconds > 0 ) { return String(Settings::interval_seconds); }
+        if ( Settings::interval_minutes > 0 ) { return String(Settings::interval_minutes); }
+        if ( Settings::interval_hours > 0 ) { return String(Settings::interval_hours); }
+        if ( Settings::interval_days > 0 ) { return String(Settings::interval_days); }
+    }
+    else if(var == "SETTINGS_INTERVAL_SECONDS")
+    {
+        if ( Settings::interval_seconds > 0 ) { return String("selected"); }
+        return String("");
+    }
+    else if(var == "SETTINGS_INTERVAL_MINUTES")
+    {
+        if ( Settings::interval_minutes > 0 ) { return String("selected"); }
+        return String("");   
+    }
+    else if(var == "SETTINGS_INTERVAL_HOURS")
+    {
+        if ( Settings::interval_hours > 0 ) { return String("selected"); }
+        return String("");
+    }
+    else if(var == "SETTINGS_INTERVAL_DAYS")
+    {
+        if ( Settings::interval_days > 0 ) { return String("selected"); }
+        return String("");
+    }
+
     return String();
 }
 
@@ -159,6 +190,12 @@ class CaptiveRequestHandler : public AsyncWebHandler
         webServer.on("/reboot", HTTP_ANY, [](AsyncWebServerRequest *request){
             HandleRequestReboot(request);
             request->send(SPIFFS, "/index.html", String(), false, processor);
+        });
+
+        // Route for /settings web page
+        webServer.on("/settings", HTTP_ANY, [](AsyncWebServerRequest *request){
+            HandleRequestSettings(request);
+            request->send(SPIFFS, "/settings.html", String(), false, processor);
         });
 
         // Route to load mini-default.min.css file
@@ -211,6 +248,9 @@ void setup() {
     // print wake up reasons to console
     DeepSleep_PrintWakeupReason();
     DeepSleep_PrintWakeupTouchpad();
+
+    // Load Settings from SPIFFS
+    Settings::LoadFromSPIFFS();
 
     // Load quotes from SPIFFS
     Quotes::LoadQuotesFromSPIFFS();
@@ -374,6 +414,39 @@ void HandleRequestReboot(AsyncWebServerRequest *request)
     ESP.restart();
 }
 
+/**************************************************
+* HandleRequestSettings(AsyncWebServerRequest *request)
+*/
+void HandleRequestSettings(AsyncWebServerRequest *request)
+{
+    Serial.println("HandleRequestSettings()");
+
+    if (request->hasParam("save", true)) 
+    {
+        Serial.println("Save settings ...");
+
+        // reset all intervall values to 0
+        Settings::interval_seconds = 0;
+        Settings::interval_minutes = 0;
+        Settings::interval_hours = 0;
+        Settings::interval_days = 0;
+    
+        // get the value from the form
+        int value = request->getParam("interval_value", true)->value().toInt();
+    
+        if ( request->getParam("interval_unit", true)->value().toInt() == 0 ){ Settings::interval_seconds = value; }
+        else if ( request->getParam("interval_unit", true)->value().toInt() == 1 ){ Settings::interval_minutes = value; }
+        else if ( request->getParam("interval_unit", true)->value().toInt() == 2 ){ Settings::interval_hours = value; }
+        else if ( request->getParam("interval_unit", true)->value().toInt() == 3 ){ Settings::interval_days = value; }
+
+        Settings::SaveToSPIFFS();
+
+        // immediate redirect to home 
+        request->redirect("/");
+    }else{
+        Serial.println("no save");
+    }
+}
 
 /**************************************************
 * HandleRequestEditQuote(AsyncWebServerRequest *request)
