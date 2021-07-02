@@ -23,7 +23,7 @@ String linesOfText[10];
 typedef struct {
     String txt;
     String author;
-    byte count;   
+    byte count;   // currently unused since we removed real random quote selection, see commented part in Quotes::GetRandomQuote()
 } quote;
 
 
