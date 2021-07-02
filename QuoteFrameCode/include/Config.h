@@ -3,7 +3,7 @@
 //const char* STA_SSID = "";
 //const char* STA_PASSWORD = "";
 
-const char *AP_SSID = "SPRYGGKLOPPA";
+const char *AP_SSID = "QuoteFrame";
 const char *AP_PASSWORD = "12345678";
 
 uint16_t QUOTEID = 0;

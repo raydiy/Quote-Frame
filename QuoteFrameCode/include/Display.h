@@ -239,12 +239,12 @@ void Display::DrawFrame()
 void Display::DrawQRCode()
 {
     // draw qr code graphic
-    int x = Display::CANVAS_LEFT + 30;
+    int x = Display::CANVAS_LEFT + 40;
     int y = Display::CANVAS_TOP + 100;
     display.drawInvertedBitmap( x, y, image_data_QuoteFrameQRCode, 237,237, GxEPD_BLACK );
 
     // draw arrow image
-    int cx = Display::CANVAS_LEFT + Display::CANVAS_WIDTH/2 - 35 - 30;
+    int cx = Display::CANVAS_LEFT + Display::CANVAS_WIDTH/2 - 35;
     int cy = Display::CANVAS_TOP + Display::CANVAS_HEIGHT/2 - 14 + 130;
     display.drawInvertedBitmap( cx, cy, image_data_arrow, 70,28, GxEPD_BLACK );
 }
@@ -257,29 +257,47 @@ void Display::DrawConfigInfos()
 {
     display.setTextColor(GxEPD_BLACK);
     
+    // draw headline
     display.setFont(&Maiden_Orange_Regular_50);
-    Display::DrawCenteredText("RAYDIY's SPRYGGKLOPPA", Display::CANVAS_TOP + 60);
+    Display::DrawCenteredText("RAYDIY's QuoteFrame", Display::CANVAS_TOP + 60);
 
-    int x = Display::CANVAS_LEFT + 315;
+    // draw centered line
+    int x = Display::CANVAS_LEFT + Display::CANVAS_WIDTH/2;
     int y = Display::CANVAS_TOP + 100;
     display.drawLine(x,y,x,y+237,GxEPD_BLACK);
 
-    x = Display::CANVAS_LEFT + 350;
-    y += 40;
-    display.setFont(&Maiden_Orange_Regular_50);
+    x += Display::CANVAS_LEFT + 5;
+    
+    // draw SSID
+    y += 30;
+    display.setFont(&FreeSans12pt7b);
     display.setCursor(x,y);
-    display.print("CONFIG MODE");
+    display.print("SSID:");
 
-    y += 130;
-    display.setCursor(x,y);
-    display.print("Connect to Wifi:");
-
-    y += 60;
+    y += 50;
     display.setFont(&Maiden_Orange_Regular_50);
     display.setCursor(x,y);
     display.print(String(AP_SSID));
 
-    // print number fo quotesd at the bottom of screen
+    // draw PASSWORD
+    y += 50;
+    display.setFont(&FreeSans12pt7b);
+    display.setCursor(x,y);
+    display.print("PASSWORD:");
+
+    y += 50;
+    display.setFont(&Maiden_Orange_Regular_50);
+    display.setCursor(x,y);
+    display.print(String(AP_PASSWORD));
+
+    // draw IP
+    y += 50;
+    display.setFont(&FreeSans12pt7b);
+    display.setCursor(x,y);
+    display.print("IP: 192.168.4.1");
+
+
+    // print number of quotes at the bottom of screen
     uint16_t count = Quotes::GetNumberOfQuotes();
     String quoteStats = "Number of quotes: " + String(count);
     
