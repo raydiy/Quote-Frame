@@ -402,7 +402,9 @@ quote Quotes::GetRandomQuote()
     // if no quotes
     if ( numberOfQuotes == 0 )
     {
+        Serial.println(F("No quotes found."));
         result.txt = "No quotes found.\nRestart in config mode\nand add some quotes!";
+        return result;
     }
 
     // 1 QUOTES

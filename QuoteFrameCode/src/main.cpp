@@ -231,9 +231,9 @@ void setup() {
     while(!Serial);
 
     // Initialize SPIFFS
-    Serial.println("Initialize SPIFFS ...");
+    Serial.println("main::setup() Initialize SPIFFS ...");
     if(!SPIFFS.begin(true)){
-        Serial.println("An Error has occurred while mounting SPIFFS");
+        Serial.println("main::setup() An Error has occurred while mounting SPIFFS");
         return;
     }
 
@@ -264,30 +264,6 @@ void setup() {
     {
 
         Display::ShowMessage("Starting config mode ...");
-
-        /*
-        // START STATION MODE //////////////////////////////////////////////////
-        // Connect to WiFi Station
-        ConnectToWiFi(STA_SSID, STA_PASSWORD);
-
-        // Route for /imexport web page
-        webServer.on("/", HTTP_ANY, [](AsyncWebServerRequest *request){
-            HandleRequestImExport(request);
-            request->send(SPIFFS, "/imexport.html", String(), false, processor);
-        });
-
-        // Route to load mini-default.min.css file
-        webServer.on("/mini-default.min.css", HTTP_GET, [](AsyncWebServerRequest *request){
-            request->send(SPIFFS, "/mini-default.min.css", "text/css");
-        });
-
-        // Start the web server
-        delay(1000);
-        Serial.println("Webserver started.");
-        webServer.begin();
-        // END STATION MODE //////////////////////////////////////////////////
-        */
-
         
         // START ACCESS POINT MODE //////////////////////////////////////////////////
         // Init WiFi Access Point
@@ -295,19 +271,19 @@ void setup() {
 
         if (successWiFi)
         {
-            Serial.println("WiFi started successfully ...");
-            Serial.println("Start DNS Server ...");
+            Serial.println("main::setup() WiFi started successfully ...");
+            Serial.println("main::setup() Start DNS Server ...");
 
             // Start DNS server for captive portal. Route all requests to the ESP IP address.
             dnsServer.setErrorReplyCode(DNSReplyCode::NoError);
             dnsServer.start(53, "*", WiFi.softAPIP());
 
-            Serial.println("Add handler ...");
+            Serial.println("main::setup() Add handler ...");
             webServer.addHandler(new CaptiveRequestHandler()).setFilter(ON_AP_FILTER); //only when requested from AP
 
             // Start the web server
             delay(1000);
-            Serial.println("Webserver started.");
+            Serial.println("main::setup() Webserver started.");
             webServer.begin();
         }
         // END ACCESS POINT MODE //////////////////////////////////////////////////
@@ -389,7 +365,7 @@ void HandleRequestDeleteQuote(AsyncWebServerRequest *request)
     // if yes, check for a quote id parameter and delete that wuote
     if (request->hasParam("delete")) 
     {
-        Serial.println("HandleRequestDeleteQuote()");
+        Serial.println("main::HandleRequestDeleteQuote()");
 
         uint16_t quoteIDtoDelete = request->getParam("id")->value().toInt();
         Quotes::DeleteQuote(quoteIDtoDelete);
@@ -421,7 +397,7 @@ void HandleRequestReboot(AsyncWebServerRequest *request)
 */
 void HandleRequestSettings(AsyncWebServerRequest *request)
 {
-    Serial.println("HandleRequestSettings()");
+    Serial.println("main::HandleRequestSettings()");
 
     if (request->hasParam("save", true)) 
     {
@@ -455,7 +431,7 @@ void HandleRequestSettings(AsyncWebServerRequest *request)
 */
 void HandleRequestEditQuote(AsyncWebServerRequest *request)
 {
-    Serial.println("HandleRequestEditQuote()");
+    Serial.println("main::HandleRequestEditQuote()");
 
     if (request->hasParam("id")) 
     {
@@ -481,7 +457,7 @@ void HandleRequestEditQuote(AsyncWebServerRequest *request)
 */
 void HandleRequestSaveQuote(AsyncWebServerRequest *request)
 {
-    Serial.println("HandleRequestSaveQuote()");
+    Serial.println("main::HandleRequestSaveQuote()");
 
     String quoteText;
     String quoteAuthor;
@@ -545,6 +521,7 @@ void HandleRequestSaveQuote(AsyncWebServerRequest *request)
 */
 void ConnectToWiFi(const char *ssid, const char *password)
 {
+    Serial.println("main::ConnectToWiFi()");
 
     // prepare WiFi
     WiFi.disconnect(true);             // that no old information is stored  
@@ -587,6 +564,8 @@ void ConnectToWiFi(const char *ssid, const char *password)
 */
 void DeepSleep_Begin()
 {
+    Serial.println("main::DeepSleep_Begin()");
+
     //display.powerOff();
     //display.hibernate(); // only for reset pin wakeup
 
@@ -595,6 +574,9 @@ void DeepSleep_Begin()
     digitalWrite(BUILTIN_LED, HIGH);
     #endif
     Serial.println("Starting deep-sleep period...");
+    Serial.print("Next wakup in ");
+    Serial.print(String(TIME_TO_DEEPSLEEP));
+    Serial.println(" secs");
 
     //Setup interrupt on Touch Pad 8 (GPIO33)
     touchAttachInterrupt(TOUCH_PIN, Touch_Callback, TOUCH_THRESHOLD);
@@ -616,7 +598,7 @@ void DeepSleep_Begin()
 */
 void Touch_Callback()
 {
-    Serial.println("Touch_Callback()");
+    Serial.println("main::Touch_Callback()");
 }
 
 
@@ -627,19 +609,11 @@ void Touch_Callback()
 */
 void DeepSleep_PrintWakeupReason()
 {
+    Serial.println("main::DeepSleep_PrintWakeupReason()");
+
     esp_sleep_wakeup_cause_t wakeup_reason;
     wakeup_reason = esp_sleep_get_wakeup_cause();
-    /*
-    switch(wakeup_reason)
-    {
-        case 1  : Serial.println("Wakeup caused by external signal using RTC_IO"); break;
-        case 2  : Serial.println("Wakeup caused by external signal using RTC_CNTL"); break;
-        case 3  : Serial.println("Wakeup caused by timer"); break;
-        case 4  : Serial.println("Wakeup caused by touchpad"); break;
-        case 5  : Serial.println("Wakeup caused by ULP program"); break;
-        default : Serial.println("Wakeup was not caused by deep sleep"); break;
-    }
-    */
+
     switch(wakeup_reason)
     {
         case 1  : Serial.println("Wakeup caused by external signal using RTC_IO"); break;
@@ -658,6 +632,8 @@ void DeepSleep_PrintWakeupReason()
 */
 void DeepSleep_PrintWakeupTouchpad()
 {
+    Serial.println("main::DeepSleep_PrintWakeupTouchpad()");
+
     touch_pad_t touchPin = esp_sleep_get_touchpad_wakeup_status();
     switch(touchPin)
     {
@@ -686,16 +662,20 @@ void DeepSleep_PrintWakeupTouchpad()
         {
             Serial.println("START IN CONFIG MODE NOW ...");
             MODE = MODE_CONFIG;
-            esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_TIMER);
+            esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_ALL);
         }
     }
 }
 
 
 
-
+/**************************************************
+* DebugPrintRequestParameter() 
+*/
 void DebugPrintRequestParameter(AsyncWebServerRequest *request)
 {
+    Serial.println("main::DebugPrintRequestParameter()");
+
     //List all parameters
     int params = request->params();
     for(int i=0;i<params;i++)
@@ -711,9 +691,13 @@ void DebugPrintRequestParameter(AsyncWebServerRequest *request)
     }
 }
 
-
+/**************************************************
+* InitWiFiAccessPoint() 
+*/
 bool InitWiFiAccessPoint()
 {
+    //Serial.println("main::InitWiFiAccessPoint()");
+
     WiFi.disconnect(true);             // that no old information is stored  
     WiFi.mode(WIFI_OFF);               // switch WiFi off  
     delay(1000);                       // short wait to ensure WIFI_OFF  
