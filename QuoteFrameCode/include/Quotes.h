@@ -233,6 +233,7 @@ void Quotes::AddQuotesToJsonDocument(DynamicJsonDocument &doc)
             JsonObject newQuote = quoteArray.createNestedObject();
             newQuote["txt"] = q[i].txt;
             newQuote["author"] = q[i].author;
+            newQuote["count"] = q[i].count;
         }
     }
 }
@@ -339,7 +340,7 @@ void Quotes::ImportQuotesFromJSONString(const String& jsonString, bool replace)
             {
                 String txt = value["txt"];
                 String author = value["author"];
-                byte count = 0;
+                byte count = value["count"];
 
                 if (txt != "")
                 {
@@ -398,13 +399,14 @@ quote Quotes::GetRandomQuote()
     uint16_t numberOfQuotes = Quotes::GetNumberOfQuotes();
     uint16_t maxID = numberOfQuotes;
 
+    Serial.print("numberOfQuotes: ");
+    Serial.println(String(numberOfQuotes));
+
     // NO QUOTES
     // if no quotes
     if ( numberOfQuotes == 0 )
     {
-        Serial.println(F("No quotes found."));
         result.txt = "No quotes found.\nRestart in config mode\nand add some quotes!";
-        return result;
     }
 
     // 1 QUOTES
@@ -424,8 +426,6 @@ quote Quotes::GetRandomQuote()
         }else{
             randomID = 0;
         }
-
-        LASTQUOTEID = randomID;
     }
 
     /* REAL RANOM ATTEMPT
@@ -488,14 +488,14 @@ quote Quotes::GetRandomQuote()
         randomID = LASTQUOTEID + 1;
         if ( randomID >= maxID )
             randomID = 0;
-
-        // update LASTQUOTEID
-        LASTQUOTEID = randomID;
-        Settings::last_quote_id = LASTQUOTEID;
-
-        // save settings due to change of LASTQUOTEID
-        Settings::SaveToSPIFFS();
     }
+
+    // update LASTQUOTEID
+    LASTQUOTEID = randomID;
+    Settings::last_quote_id = LASTQUOTEID;
+    
+    // save settings due to change of LASTQUOTEID
+    Settings::SaveToSPIFFS();
 
     result = Quotes::q[randomID];
 
