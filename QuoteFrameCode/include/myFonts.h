@@ -10,8 +10,8 @@ typedef struct {
     GFXfont font_medium;
     GFXfont font_small;
 }FontSet;
-FontSet fontSetOfLines[10];
-uint8_t fontSizeOfLines[10];
+FontSet fontSetOfLines[10]; // an array of 10 fontsets, one for each line of text. each quotes can have 10 lines of text at max.
+uint8_t fontSizeOfLines[10]; // an array for maximum 10 lines of text whicoh holds the font size for each of the 10 lines, can be 0,1 or 2
 
 #include "Fonts/FreeSans12pt7b.h"
 #include "Fonts/FreeSans18pt7b.h"

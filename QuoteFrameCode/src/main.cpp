@@ -587,6 +587,7 @@ void DeepSleep_Begin()
     // start deep sleep timer
     uint64_t microToSecondsFactor = 1000000;
     esp_sleep_enable_timer_wakeup(TIME_TO_DEEPSLEEP * microToSecondsFactor); // in microseconds
+    esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_ON); // all RTC Peripherals are powered
 
     // sleep!
     esp_deep_sleep_start();
