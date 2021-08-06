@@ -1,14 +1,19 @@
 #include <Arduino.h>
 #include "Frames.h"
-#include "myFonts.h"
+
 #include "Frames/QuoteFrameQRCode.h"
 #include "Frames/arrow.h"
 
 #define ENABLE_GxEPD2_GFX 0
 #include <GxEPD2_BW.h> // including both doesn't hurt
 #include <GxEPD2_3C.h> // including both doesn't hu
+#include <GxEPD2_7C.h>
+#include "myFonts.h"
+
+
 
 // ESP32 DEVKIT C (WROOM 32) PINS
+/*
 static const uint8_t EPD_BUSY         = 4;  // to EPD BUSY
 static const uint8_t EPD_CS           = 5;  // (VSPI) to EPD CS
 static const uint8_t EPD_RST          = 16;  // to EPD RST
@@ -16,10 +21,9 @@ static const uint8_t EPD_DC           = 17;  // to EPD DC
 static const uint8_t EPD_SCK          = 18; // (VSPI) to EPD CLK
 static const uint8_t EPD_MISO         = 19; // (VSPI) Master-In Slave-Out not used, as no data from display
 static const uint8_t EPD_MOSI         = 23; // (VSPI) to EPD DIN
-
+*/
 
 // ESP32 ePulse (WROVER B) PINS
-/*
 static const uint8_t EPD_BUSY         = 4;  // to EPD BUSY
 static const uint8_t EPD_CS           = 5;  // (VSPI)to EPD CS
 static const uint8_t EPD_RST          = 21; // to EPD RST
@@ -27,7 +31,7 @@ static const uint8_t EPD_DC           = 22; // to EPD DC
 static const uint8_t EPD_SCK          = 18; // (VSPI) to EPD CLK
 static const uint8_t EPD_MISO         = 19; // (VSPI) Master-In Slave-Out not used, as no data from display
 static const uint8_t EPD_MOSI         = 23; // (VSPI) to EPD DIN
-*/
+
 
 #if defined(ESP32)
 // copy constructor for your e-paper from GxEPD2_Example.ino, and for AVR needed #defines
@@ -39,6 +43,7 @@ GxEPD2_BW<GxEPD2_750_T7, GxEPD2_750_T7::HEIGHT> display(GxEPD2_750_T7(/*CS=5*/ E
 //GxEPD2_BW<GxEPD2_750_T7, GxEPD2_750_T7::HEIGHT> display(GxEPD2_750_T7(/*CS=5*/ 5, /*DC=*/ 2, /*RST=*/ 0, /*BUSY=*/ 4)); // GDEW075T7 800x480
 #endif
 
+U8G2_FOR_ADAFRUIT_GFX u8g2Fonts;
 
 // the following values depends on the size of the ePaper display and 
 // the frame and passepartout you use and how have mopunted the display.
@@ -85,8 +90,8 @@ class Display
     static void ExchangeGermanUnmlaute(String &text);
     static void DrawLinesOfTextCentered(quote q);
     static int LinesOfTextCount();
-    static uint16_t LinesOfTextLineHeight(int i);
-    static uint16_t LinesOfTextLineWidth(int i);
+    static int16_t LinesOfTextLineHeight(int i);
+    static int16_t LinesOfTextLineWidth(int i);
     static int LinesOfTextTotalHeight();
     static int LinesOfTextTotalWidth();
     static bool StringContainsChar(String &text, char needle);
@@ -94,8 +99,8 @@ class Display
     static void LineBreakTextAfterChar(uint8_t index, char needle);
     static int StringCountChar(String &text, char needle);
     static int StringCharIsLast(String &text, char needle);
-    static void SetTextLineFontSet(FontSet fontSet, uint8_t i);
-    static void SetTextLineFontSet(FontSet fontSet);
+    static void SetTextLineFontSet(FontSet fontSet, uint8_t i, uint8_t fontSize);
+    static void SetTextLineFontSet(FontSet fontSet, uint8_t fontSize);
     static void SetTextLine(String text, uint8_t i);
     static void SetTextLine(String text);
     static bool DoesQuoteFitIntoWidth();
@@ -106,6 +111,7 @@ class Display
     static void LineBreakAtMiddleSpace(uint8_t index);
     static void SetBiggestFont();
     static void SetDisplayFontFromLineOfText(uint8_t index);
+    static void DrawTestFont();
     static void DrawTestRectangle();
     static void DebugPrintLinesOfText();
     static void DrawQRCode();
@@ -141,6 +147,7 @@ void Display::Init()
     display.setRotation( SCREEN_ROTATION );
     display.setFullWindow();
     display.setTextWrap(false);
+    u8g2Fonts.begin(display);
 }
 
 
@@ -179,8 +186,14 @@ void Display::Draw()
     {
         display.fillScreen(GxEPD_WHITE);
 
-        //Display::DrawTestRectangle();
+        u8g2Fonts.setFontMode(1);                 // use u8g2 transparent mode (this is default)
+        u8g2Fonts.setFontDirection(0);            // left to right (this is default)
+        u8g2Fonts.setForegroundColor(GxEPD_BLACK);         // apply Adafruit GFX color
+        u8g2Fonts.setBackgroundColor(GxEPD_WHITE);         // apply Adafruit GFX color
 
+        //Display::DrawTestRectangle();
+        //Display::DrawTestFont();
+        
         // if we are in config mode, draw qr code of the WiFi credentials
         if (MODE==MODE_CONFIG)
         {
@@ -195,6 +208,7 @@ void Display::Draw()
             Display::SetBiggestFont();
             Display::DrawLinesOfTextCentered(q);
         }
+    
     }
     while (display.nextPage());
 }
@@ -230,6 +244,17 @@ void Display::DrawFrame()
     x = Display::CANVAS_LEFT + Display::CANVAS_WIDTH - w - margin;
     y = Display::Display::CANVAS_TOP + Display::CANVAS_HEIGHT - h - margin;
     display.drawInvertedBitmap( x, y, frameImage, w,h, GxEPD_BLACK );
+
+    Serial.print("frame w/h: ");
+    Serial.print(w);
+    Serial.print("/");
+    Serial.println(h);
+    Serial.print("CANVAS_TOP: ");
+    Serial.println(Display::CANVAS_TOP);
+    Serial.print("margin: ");
+    Serial.println(margin);
+    Serial.print("margin: ");
+    Serial.println(margin);
 }
 
 
@@ -258,7 +283,7 @@ void Display::DrawConfigInfos()
     display.setTextColor(GxEPD_BLACK);
     
     // draw headline
-    display.setFont(&Maiden_Orange_Regular_50);
+    display.setFont(&FreeSans12pt7b);
     Display::DrawCenteredText("RAYDIY's QuoteFrame", Display::CANVAS_TOP + 60);
 
     // draw centered line
@@ -275,7 +300,7 @@ void Display::DrawConfigInfos()
     display.print("SSID:");
 
     y += 50;
-    display.setFont(&Maiden_Orange_Regular_50);
+    display.setFont(&FreeSans12pt7b);
     display.setCursor(x,y);
     display.print(String(AP_SSID));
 
@@ -286,7 +311,7 @@ void Display::DrawConfigInfos()
     display.print("PASSWORD:");
 
     y += 50;
-    display.setFont(&Maiden_Orange_Regular_50);
+    display.setFont(&FreeSans12pt7b);
     display.setCursor(x,y);
     display.print(String(AP_PASSWORD));
 
@@ -320,13 +345,14 @@ void Display::DrawConfigInfos()
 */
 void Display::DrawCenteredText(String text, int y)
 {
-    int16_t tbx, tby;
-    uint16_t tbw, tbh;
-    display.getTextBounds(text, 0, 0, &tbx, &tby, &tbw, &tbh); 
+    int16_t tw = u8g2Fonts.getUTF8Width(text.c_str()); // text box width
+    //int16_t ta = u8g2Fonts.getFontAscent(); // positive
+    //int16_t td = u8g2Fonts.getFontDescent(); // negative; in mathematicians view
+    //int16_t th = ta - td; // text box height
 
-    int x = Display::CANVAS_LEFT + Display::CANVAS_WIDTH/2 - tbw/2;
-    display.setCursor(x,y);
-    display.print(text);
+    int x = Display::CANVAS_LEFT + Display::CANVAS_WIDTH/2 - tw/2;
+    u8g2Fonts.setCursor(x,y);
+    u8g2Fonts.print(text);
 }
 
 
@@ -346,17 +372,17 @@ int Display::MapValue(int a1, int a2, int b1, int b2, int aVal)
 */
 void Display::CreateStringArrayFromText(String text)
 {
-    //Serial.println("CreateStringArrayFromText()");
+    Serial.println("CreateStringArrayFromText()");
 
     // reset the lines of text array by filling all with an empty string
     Display::SetTextLine("");
 
     // Exchange all german Umlaute in the text string
-    Display::ExchangeGermanUnmlaute(text);
+    //Display::ExchangeGermanUnmlaute(text);
 
-    // get a random fonty style but always with the smallest size version
+    // get a random fonty style but always with the smallest size version first
     FontSet randomFontSet = GetRandomFontSet();
-    Display::SetTextLineFontSet(randomFontSet);
+    Display::SetTextLineFontSet(randomFontSet, 0);
 
     // Handle manual or automatic line breaks
     if ( Display::StringContainsChar(text, '\n') )
@@ -377,9 +403,9 @@ void Display::CreateStringArrayFromText(String text)
 
         for (size_t fitCheck = 0; fitCheck < 20; fitCheck++)
         {
-            //Serial.println("");
-            //Serial.print("====== Check quote does fit try# ");
-            //Serial.println(fitCheck);
+            Serial.println("");
+            Serial.print("====== Check quote does fit try# ");
+            Serial.println(fitCheck);
 
             if (Display::DoesQuoteFitIntoWidth() == false)
             {
@@ -398,11 +424,11 @@ void Display::CreateStringArrayFromText(String text)
             }
             else
             {
-                //Serial.println("Quotes does fit :)");
+                Serial.println("Quotes does fit :)");
                 break;
             }
 
-            //Display::DebugPrintLinesOfText();
+            Display::DebugPrintLinesOfText();
         }
         
     }
@@ -448,14 +474,22 @@ void Display::BreakLineOfText(uint8_t index)
 */
 bool Display::DoesQuoteFitIntoWidth()
 {
+    Serial.println("DoesQuoteFitIntoWidth()");
+
     int totalQuoteWidth = Display::LinesOfTextTotalWidth();
     int marginedCanvasWidth = CANVAS_WIDTH - CANVAS_MARGIN*2;
 
     if (totalQuoteWidth > marginedCanvasWidth)
     {
+        Serial.println("NO");
+        Serial.print("totalQuoteWidth: ");
+        Serial.println(totalQuoteWidth);
+        Serial.print("maximum allowed width: ");
+        Serial.println(marginedCanvasWidth);
         return false;
     }
 
+    Serial.println("YES");
     return true;
 }
 
@@ -465,14 +499,18 @@ bool Display::DoesQuoteFitIntoWidth()
 */
 bool Display::DoesQuoteFitIntoHeight()
 {
+    Serial.println("DoesQuoteFitIntoHeight() -> ");
+
     int totalQuoteHeight = Display::LinesOfTextTotalHeight();
     int marginedCanvasHeight = CANVAS_HEIGHT - CANVAS_MARGIN*2;
 
     if (totalQuoteHeight > marginedCanvasHeight)
     {
+        Serial.println("NO");
         return false;
     }
 
+    Serial.println("YES");
     return true;
 }
 
@@ -488,7 +526,7 @@ void Display::SetTextLine(String text, uint8_t index)
 
 
 /**************************************************
-* SetTextLine(String text, int index=-1)
+* SetTextLine(String text)
 * Sets all of the lineOfText array to text
 */
 void Display::SetTextLine(String text)
@@ -501,25 +539,26 @@ void Display::SetTextLine(String text)
 }
 
 /**************************************************
-* SetTextLineFontSet(FontSet fontSet, int index=-1)
-* Sets the lineOfText to a certain font
+* SetTextLineFontSet(FontSet fontSet, uint8_t i, uint8_t fontSize)
+* Sets the lineOfText to a certain font to font size fontSize
 */
-void Display::SetTextLineFontSet(FontSet fontSet, uint8_t i)
+void Display::SetTextLineFontSet(FontSet fontSet, uint8_t i, uint8_t fontSize)
 {
     fontSetOfLines[i] = fontSet;
-    fontSizeOfLines[i] = 0;
+    fontSizeOfLines[i] = fontSize;
 }
 
 /**************************************************
-* SetTextLineFontSet(FontSet fontSet, int index=-1)
-* Sets the lineOfText to a certain font
+* SetTextLineFontSet(FontSet fontSet, uint8_t fontSize)
+* Sets all lineOfTexts to a font size fontSize
 */
-void Display::SetTextLineFontSet(FontSet fontSet)
+void Display::SetTextLineFontSet(FontSet fontSet, uint8_t fontSize)
 {
     int size = sizeof fontSetOfLines / sizeof fontSetOfLines[0];
     for (size_t i = 0; i < size; i++)
     {
         fontSetOfLines[i] = fontSet;
+        fontSizeOfLines[i] = fontSize;
     }
 }
 
@@ -801,7 +840,7 @@ void Display::ExchangeGermanUnmlaute(String &text)
 */
 void Display::DrawLinesOfTextCentered(quote q)
 {
-    //Serial.println("DrawLinesOfTextCentered()");
+    Serial.println("DrawLinesOfTextCentered()");
 
     int cntLinesOfText = Display::LinesOfTextCount();
 
@@ -825,33 +864,34 @@ void Display::DrawLinesOfTextCentered(quote q)
     int lastY = firstY;
 
     // boundary box window
-    int16_t tbx, tby;
-    uint16_t tbw, tbh;
-    
+    int16_t ta, td, tbw, tbh;
+ 
     for (size_t i = 0; i < cntLinesOfText; i++)
     {
-        String text = linesOfText[i];
-
         // set the current font for that line of text
         Display::SetDisplayFontFromLineOfText(i);
 
-        //Serial.print("txt:");
-        //Serial.println(text);
+        Serial.print("fontsize:");
+        Serial.print(fontSizeOfLines[i]);
+        Serial.print("txt:");
+        Serial.println(linesOfText[i]);
         
         // it works for origin 0, 0, fortunately (negative tby!)
-        display.getTextBounds(text, 0, 0, &tbx, &tby, &tbw, &tbh); 
+        tbw = u8g2Fonts.getUTF8Width(linesOfText[i].c_str()); // text box width
+        ta = u8g2Fonts.getFontAscent(); // positive
+        td = u8g2Fonts.getFontDescent(); // negative; in mathematicians view
+        tbh = ta - td; // text box height
         lastY += tbh;
 
         // center bounding box by transposition of origin:
         int x = cx - tbw/2;
         int y = lastY;
 
-        // draw bounding box around each line of text
+        // debug draw bounding box around each line of text
         //display.drawRect( x, y, tbw, -tbh, GxEPD_BLACK );
 
-        display.setCursor(x,y);
-        display.setTextColor(GxEPD_BLACK);
-        display.print(text);
+        u8g2Fonts.setCursor(x,y);
+        u8g2Fonts.print(linesOfText[i]);
 
         lastY += LINE_DISTANCE;
     }
@@ -865,16 +905,16 @@ void Display::DrawLinesOfTextCentered(quote q)
         //Serial.println("spaceBeetweenQuoteAndLowerBorder");
         //Serial.println(spaceBeetweenQuoteAndLowerBorder);
 
-        display.setFont(&FreeSans12pt7b);
-        String text = q.author;
-        ExchangeGermanUnmlaute(text);
+        u8g2Fonts.setFont(BebasNeue_Regular_35);
+        //ExchangeGermanUnmlaute(text);
 
         // boundary box window
-        int16_t tbx, tby;
-        uint16_t tbw, tbh;
-        
-        // it works for origin 0, 0, fortunately (negative tby!)
-        display.getTextBounds(text, 0, 0, &tbx, &tby, &tbw, &tbh); 
+        int16_t ta, td, tbw, tbh;
+
+        tbw = u8g2Fonts.getUTF8Width(q.author.c_str()); // text box width
+        ta = u8g2Fonts.getFontAscent(); // positive
+        td = u8g2Fonts.getFontDescent(); // negative; in mathematicians view
+        tbh = ta - td; // text box height
 
         // center bounding box by transposition of origin:
         int x = Display::CANVAS_LEFT + Display::CANVAS_MARGIN;
@@ -885,10 +925,9 @@ void Display::DrawLinesOfTextCentered(quote q)
             x = cx - tbw/2;
             y = quoteLowerBorder + spaceBeetweenQuoteAndLowerBorder/2;
         }
-
-        display.setCursor(x,y);
-        display.setTextColor(GxEPD_BLACK);
-        display.print(text);
+        
+        u8g2Fonts.setCursor(x,y);
+        u8g2Fonts.print(q.author.c_str());
     }
 }
 
@@ -899,6 +938,8 @@ void Display::DrawLinesOfTextCentered(quote q)
 */
 int Display::LinesOfTextCount()
 {
+    //Serial.print("Display::LinesOfTextCount() result: ");
+
     int result = 0;
     int max = sizeof linesOfText / sizeof linesOfText[0];
 
@@ -910,6 +951,7 @@ int Display::LinesOfTextCount()
         }
     }
 
+    //Serial.println(result);
     return result;
 }
 
@@ -918,10 +960,13 @@ int Display::LinesOfTextCount()
 * LinesOfTextLineHeight()
 * returns the height of a single line of text in the linesOfText array
 * i: the index in the linesOfText array to get the height from
-* remember this width is based on the font currently set with display.setFont()
+* remember this height is based on the font currently set with display.setFont()
 */
-uint16_t Display::LinesOfTextLineHeight(int i)
+int16_t Display::LinesOfTextLineHeight(int i)
 {
+    //Serial.print("Display::LinesOfTextLineHeight() i: ");
+    //Serial.println(i);
+
     if (linesOfText[i] == "")
     {
         return 0;
@@ -931,13 +976,12 @@ uint16_t Display::LinesOfTextLineHeight(int i)
     Display::SetDisplayFontFromLineOfText(i);
 
     // boundary box window
-    int16_t tbx, tby;
-    uint16_t tbw, tbh;
-    
-    // it works for origin 0, 0, fortunately (negative tby!)
-    display.getTextBounds(linesOfText[i], 0, 0, &tbx, &tby, &tbw, &tbh);
+    //int16_t tw = u8g2Fonts.getUTF8Width(linesOfText[i].c_str()); // text box width
+    int16_t ta = u8g2Fonts.getFontAscent(); // positive
+    int16_t td = u8g2Fonts.getFontDescent(); // negative; in mathematicians view
+    int16_t th = ta - td; // text box height
 
-    return tbh;
+    return th;
 }
 
 
@@ -947,8 +991,13 @@ uint16_t Display::LinesOfTextLineHeight(int i)
 * i: the index in the linesOfText array to get the height from
 * remember this width is based on the font currently set with display.setFont()
 */
-uint16_t Display::LinesOfTextLineWidth(int i)
+int16_t Display::LinesOfTextLineWidth(int i)
 {
+    //Serial.print("    Display::LinesOfTextLineWidth() i:");
+    //Serial.print(i);
+    //Serial.print(" text:");
+    //Serial.println(linesOfText[i]);
+
     if (linesOfText[i] == "")
     {
         return 0;
@@ -958,13 +1007,15 @@ uint16_t Display::LinesOfTextLineWidth(int i)
     Display::SetDisplayFontFromLineOfText(i);
 
     // boundary box window
-    int16_t tbx, tby;
-    uint16_t tbw, tbh;
+    int16_t tw = u8g2Fonts.getUTF8Width(linesOfText[i].c_str()); // text box width
+    //int16_t ta = u8g2Fonts.getFontAscent(); // positive
+    //int16_t td = u8g2Fonts.getFontDescent(); // negative; in mathematicians view
+    //int16_t th = ta - td; // text box height
     
-    // it works for origin 0, 0, fortunately (negative tby!)
-    display.getTextBounds(linesOfText[i], 0, 0, &tbx, &tby, &tbw, &tbh);
+    //Serial.print("    line width:");
+    //Serial.println(tw);
 
-    return tbw;
+    return tw;
 }
 
 
@@ -975,6 +1026,9 @@ uint16_t Display::LinesOfTextLineWidth(int i)
 */
 int Display::LinesOfTextTotalHeight()
 {
+    //Serial.print("  Display::LinesOfTextTotalHeight()");
+
+
     int result = 0;
     int lastLineHeight = 0;
     int max = Display::LinesOfTextCount();
@@ -988,6 +1042,8 @@ int Display::LinesOfTextTotalHeight()
     result -= lastLineHeight + LINE_DISTANCE;
     result += lastLineHeight;
 
+    //Serial.print("  total height: ");
+    //Serial.println(result);    
     return result;
 }
 
@@ -999,6 +1055,8 @@ int Display::LinesOfTextTotalHeight()
 */
 int Display::LinesOfTextTotalWidth()
 {
+    //Serial.println("  Display::LinesOfTextTotalWidth()");
+
     int result = 0;
     int max = sizeof linesOfText / sizeof linesOfText[0];
 
@@ -1014,6 +1072,8 @@ int Display::LinesOfTextTotalWidth()
         }
     }
 
+    //Serial.print("  total width: ");
+    //Serial.println(result);
     return result;
 }
 
@@ -1022,18 +1082,32 @@ int Display::LinesOfTextTotalWidth()
 * SetBiggestFont()
 * check each line of the quote if setting a bigger font still fits into width and height
 * if yes, set the bigger font
+* fontSizeOfLines holds the number 0,1 or 3 for th three font sizes
+* 0 0 small, 1 = medium, 2 = big
 */
 void Display::SetBiggestFont()
 {
-    //Serial.println("SetBiggestFont()");
+    Serial.println("SetBiggestFont()");
 
     int count = LinesOfTextCount();
 
-    // iterate each lien of text
+    // iterate each line of text
     for (size_t i = 0; i < count; i++)
     {
+        Serial.print("  check line ");
+        Serial.print(i+1);
+        Serial.print(" of ");
+        Serial.println(count);
+        Serial.print("  fontName:");
+        Serial.println(fontSetOfLines[i].name);
+        Serial.print("  current size:");
+        Serial.println(fontSizeOfLines[i]);
+
+        Display::DoesQuoteFitIntoWidth();
+
         if ( fontSizeOfLines[i] == 0 )
         {
+            Serial.println("  check font size 1 ...");
             fontSizeOfLines[i] = 1;
             if ( Display::DoesQuoteFitIntoWidth() == false || Display::DoesQuoteFitIntoHeight() == false )
             {
@@ -1043,6 +1117,7 @@ void Display::SetBiggestFont()
 
         if ( fontSizeOfLines[i] == 1 )
         {
+            Serial.println("  check font size 2 ...");
             fontSizeOfLines[i] = 2;
             if ( Display::DoesQuoteFitIntoWidth() == false || Display::DoesQuoteFitIntoHeight() == false )
             {
@@ -1059,17 +1134,80 @@ void Display::SetBiggestFont()
 */
 void Display::SetDisplayFontFromLineOfText(uint8_t index)
 {
+    //Serial.print("      Display::SetDisplayFontFromLineOfText() index:");
+    //Serial.print(index);
+    //Serial.print(" fontSize:");
+    //Serial.println(fontSizeOfLines[index]);
+
     if ( fontSizeOfLines[index] == 0 )
     {
-        display.setFont(&fontSetOfLines[index].font_small);
+        u8g2Fonts.setFont(fontSetOfLines[index].font_small);
     }
     else if ( fontSizeOfLines[index] == 1 )
     {
-        display.setFont(&fontSetOfLines[index].font_medium);
+        u8g2Fonts.setFont(fontSetOfLines[index].font_medium);
     }
     else
     {
-        display.setFont(&fontSetOfLines[index].font_big);
+        u8g2Fonts.setFont(fontSetOfLines[index].font_big);
+    }
+}
+
+
+/**************************************************
+* DrawTestFont()
+* Draws three lines of text to check the font variants
+*/
+void Display::DrawTestFont()
+{
+    // reset all lines of text
+    Display::SetTextLine("");
+    FontSet randomFontSet = GetRandomFontSet();
+    Display::SetTextLineFontSet(randomFontSet, 0);
+
+    linesOfText[0] = randomFontSet.name;
+    linesOfText[1] = "ABCDEFGÄÖÜäöü";
+    linesOfText[2] = "ABCDEFGÄÖÜäöü";
+    linesOfText[3] = "ABCDEFGÄÖÜäöü";
+    fontSizeOfLines[0] = 2;
+    fontSizeOfLines[1] = 2;
+    fontSizeOfLines[2] = 1;
+    fontSizeOfLines[3] = 0;
+
+    // boundary box window
+    int16_t ta, td, tbw, tbh;
+    int quoteHeight = LinesOfTextTotalHeight();
+    int cx = CANVAS_LEFT + CANVAS_WIDTH/2;
+    int cy = CANVAS_TOP + CANVAS_HEIGHT/2;
+    int firstY = cy - quoteHeight/2;
+    int lastY = firstY;
+
+    for (size_t i = 0; i < 4; i++)
+    {
+        // set the current font for that line of text
+        Display::SetDisplayFontFromLineOfText(i);
+
+        Serial.print("txt:");
+        Serial.println(linesOfText[i]);
+        
+        // it works for origin 0, 0, fortunately (negative tby!)
+        tbw = u8g2Fonts.getUTF8Width(linesOfText[i].c_str()); // text box width
+        ta = u8g2Fonts.getFontAscent(); // positive
+        td = u8g2Fonts.getFontDescent(); // negative; in mathematicians view
+        tbh = ta - td; // text box height
+        lastY += tbh;
+
+        // center bounding box by transposition of origin:
+        int x = cx - tbw/2;
+        int y = lastY;
+
+        // debug draw bounding box around each line of text
+        //display.drawRect( x, y, tbw, -tbh, GxEPD_BLACK );
+
+        u8g2Fonts.setCursor(x,y);
+        u8g2Fonts.print(linesOfText[i]);
+
+        lastY += LINE_DISTANCE;
     }
 }
 
@@ -1084,6 +1222,8 @@ void Display::SetDisplayFontFromLineOfText(uint8_t index)
 */
 void Display::DrawTestRectangle()
 {
+    Serial.println("Display::DrawTestRectangle()");
+
     int x = MapValue(0, display.width(), Display::CANVAS_LEFT, Display::CANVAS_WIDTH, 0);
     int y = MapValue(0, display.height(), Display::CANVAS_TOP, Display::CANVAS_HEIGHT, 0);
     int w = MapValue(0, display.width(), Display::CANVAS_LEFT, Display::CANVAS_WIDTH, display.width());
@@ -1143,16 +1283,18 @@ void Display::ShowMessage(String message)
     display.firstPage();
     do
     {
-        display.fillScreen(GxEPD_WHITE);
-        display.setTextColor(GxEPD_BLACK);
-        display.setFont(&Maiden_Orange_Regular_50);
+        u8g2Fonts.setFontMode(1);                       // use u8g2 transparent mode (this is default)
+        u8g2Fonts.setFontDirection(0);                  // left to right (this is default)
+        u8g2Fonts.setForegroundColor(GxEPD_BLACK);      // apply Adafruit GFX color
+        u8g2Fonts.setBackgroundColor(GxEPD_WHITE);      // apply Adafruit GFX color
+        u8g2Fonts.setFont(BebasNeue_Regular_35);     // select u8g2 font from here: https://github.com/olikraus/u8g2/wiki/fntlistall
 
-        int16_t tbx, tby;
-        uint16_t tbw, tbh;
-
-        // it works for origin 0, 0, fortunately (negative tby!)
-        display.getTextBounds(message, 0, 0, &tbx, &tby, &tbw, &tbh); 
-        int cy = Display::CANVAS_TOP + Display::CANVAS_HEIGHT/2 + tbh/2;
+        //int16_t tw = u8g2Fonts.getUTF8Width(message.c_str()); // text box width
+        int16_t ta = u8g2Fonts.getFontAscent(); // positive
+        int16_t td = u8g2Fonts.getFontDescent(); // negative; in mathematicians view
+        int16_t th = ta - td; // text box height
+        
+        int cy = Display::CANVAS_TOP + Display::CANVAS_HEIGHT/2 + th/2;
 
         Display::DrawCenteredText(message, cy);
     }

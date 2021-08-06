@@ -242,8 +242,9 @@ void setup() {
     delay(1000);                       // short wait to ensure WIFI_OFF  
     WiFi.persistent(false);            // avoid that WiFi-parameters will be stored in persistent memory  
 
+
     // Set Canvas size
-    Display::SetCanvasSize(58,30,680,450,60);
+    Display::SetCanvasSize(58,35,680,450,60);
 
 
     // print wake up reasons to console
@@ -587,6 +588,7 @@ void DeepSleep_Begin()
     // start deep sleep timer
     uint64_t microToSecondsFactor = 1000000;
     esp_sleep_enable_timer_wakeup(TIME_TO_DEEPSLEEP * microToSecondsFactor); // in microseconds
+    //esp_sleep_enable_timer_wakeup(20 * microToSecondsFactor); // in microseconds
     esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_ON); // all RTC Peripherals are powered
 
     // sleep!
@@ -651,7 +653,7 @@ void DeepSleep_PrintWakeupTouchpad()
         default : Serial.println("Wakeup not by touchpad"); break;
     }
 
-    if (touchPin == 9)
+    if (touchPin == 9 || touchPin == 8)
     {
         if (MODE == MODE_CONFIG)
         {

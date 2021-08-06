@@ -497,7 +497,10 @@ quote Quotes::GetRandomQuote()
     // save settings due to change of LASTQUOTEID
     Settings::SaveToSPIFFS();
 
-    result = Quotes::q[randomID];
+    if ( numberOfQuotes != 0 )
+    {
+        result = Quotes::q[randomID];
+    }
 
     Serial.print("last quote id: ");
     Serial.println(String(LASTQUOTEID));

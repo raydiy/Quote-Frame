@@ -8,9 +8,9 @@ uint16_t LASTQUOTEID = 0;                   // the last quote id that has been d
 bool EXPORT_TO_JSON = false;                // needed for the JSON export in config mode
 
 
-uint TIME_TO_DEEPSLEEP = 60*2;              // in seconds, how long after a new quote gets loaded. 60*60*24 would be once per day. 60 would be every minute
+uint TIME_TO_DEEPSLEEP = 120;               // in seconds, how long after a new quote gets loaded. 60*60*24 would be once per day. 60 would be every minute
 #define TOUCH_THRESHOLD 40                  // Define touch sensitivity. Greater the value, more the sensitivity. 20
-#define TOUCH_PIN 32                        // the pin of the touch sensor
+#define TOUCH_PIN 33                        // the pin of the touch sensor, default like in YouTube Video is 32
 #define SCREEN_ROTATION 0                   // if for some reasons you want to rotate the display
 
 #define MODE_FRAME 0                        // mode 0 is normal quotes mode
