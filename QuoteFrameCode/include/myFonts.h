@@ -8,6 +8,7 @@
 
 typedef struct {
     String name;
+    uint8_t line_distance;
     const uint8_t* font_big;
     const uint8_t* font_medium;
     const uint8_t* font_small;
@@ -16,24 +17,24 @@ FontSet fontSetOfLines[10]; // an array of 10 fontsets, one for each line of tex
 uint8_t fontSizeOfLines[10]; // an array for maximum 10 lines of text which holds the font size for each of the 10 lines, can be 0,1 or 2
 
 #include "Fonts/FreeSans12pt7b.h"
-//#include "Fonts/FreeSans18pt7b.h"
-//#include "Fonts/FreeSansBold18pt7b.h"
+#include "Fonts/FreeSans18pt7b.h"
+#include "Fonts/FreeSansBold18pt7b.h"
 
 #include "u8g2_fonts/BebasNeue_Regular_35.h"
 #include "u8g2_fonts/BebasNeue_Regular_45.h"
 #include "u8g2_fonts/BebasNeue_Regular_57.h"
 #include "u8g2_fonts/BebasNeue_Regular_78.h"
-FontSet FontSet_BebasNeue = {"BebasNeue_Regular", BebasNeue_Regular_78, BebasNeue_Regular_57, BebasNeue_Regular_45};
+FontSet FontSet_BebasNeue = {"BebasNeue_Regular", 10, BebasNeue_Regular_78, BebasNeue_Regular_57, BebasNeue_Regular_45};
 
 #include "u8g2_fonts/AlfaSlabOne_Regular_35.h"
 #include "u8g2_fonts/AlfaSlabOne_Regular_45.h"
 #include "u8g2_fonts/AlfaSlabOne_Regular_57.h"
-FontSet FontSet_AlfaSlabOne = {"AlfaSlabOne_Regular", AlfaSlabOne_Regular_57, AlfaSlabOne_Regular_45, AlfaSlabOne_Regular_35};
+FontSet FontSet_AlfaSlabOne = {"AlfaSlabOne_Regular", 0, AlfaSlabOne_Regular_57, AlfaSlabOne_Regular_45, AlfaSlabOne_Regular_35};
 
 #include "u8g2_fonts/SpecialElite_Regular_45.h"
 #include "u8g2_fonts/SpecialElite_Regular_55.h"
 #include "u8g2_fonts/SpecialElite_Regular_65.h"
-FontSet FontSet_SpecialElite = {"SpecialElite_Regular", SpecialElite_Regular_65, SpecialElite_Regular_55, SpecialElite_Regular_45};
+FontSet FontSet_SpecialElite = {"SpecialElite_Regular", 10, SpecialElite_Regular_65, SpecialElite_Regular_55, SpecialElite_Regular_45};
 
 
 
@@ -54,6 +55,9 @@ FontSet GetRandomFontSet()
 
     int size = sizeof fontSets / sizeof fontSets[0];
     int randomID = random(0,size);
+    
+    // uncomment the following line to always get a certain font, i.e. for testing purposes
+    //randomID = 0;
 
     Serial.print(" seed:");
     Serial.print(seed);

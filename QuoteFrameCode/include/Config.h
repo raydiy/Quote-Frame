@@ -1,23 +1,23 @@
 // Here you can configure some default values
 
-const char *AP_SSID = "QuoteFrame";         // the SSID of the gateway
-const char *AP_PASSWORD = "12345678";       // tha password of the gateway
+#define MODE_FRAME 0                        // mode 0 is normal quotes mode
+#define MODE_CONFIG 1                       // mode 1 is config mode
 
-uint16_t QUOTEID = 0;                       // a global qupote id use by the setings to form for deleting and editing quotes
-uint16_t LASTQUOTEID = 0;                   // the last quote id that has been displayed
-bool EXPORT_TO_JSON = false;                // needed for the JSON export in config mode
-
-
-uint TIME_TO_DEEPSLEEP = 120;               // in seconds, how long after a new quote gets loaded. 60*60*24 would be once per day. 60 would be every minute
 #define TOUCH_THRESHOLD 40                  // Define touch sensitivity. Greater the value, more the sensitivity. 20
 #define TOUCH_PIN 33                        // the pin of the touch sensor, default like in YouTube Video is 32
 #define SCREEN_ROTATION 0                   // if for some reasons you want to rotate the display
 
-#define MODE_FRAME 0                        // mode 0 is normal quotes mode
-#define MODE_CONFIG 1                       // mode 1 is config mode
-uint8_t MODE = MODE_FRAME;                  // MODE does contain the current active mode
 
-IPAddress local_IP(192,168,4,1);            // the default IP adress you find the gateway at 
+const char *AP_SSID     = "QuoteFrame";     // the SSID of the gateway
+const char *AP_PASSWORD = "12345678";       // tha password of the gateway
+uint16_t QUOTEID        = 0;                // a global qupote id use by the setings to form for deleting and editing quotes
+uint16_t LASTQUOTEID    = 0;                // the last quote id that has been displayed
+bool EXPORT_TO_JSON     = false;            // needed for the JSON export in config mode
+uint TIME_TO_DEEPSLEEP  = 120;              // in seconds, how long after a new quote gets loaded. 60*60*24 would be once per day. 60 would be every minute
+uint8_t MODE            = MODE_FRAME;       // MODE does contain the current active mode, per default the fraem starts in MODE_FRAME
+
+
+IPAddress local_IP(192,168,4,1);            // the default IP adress & subnet mask you find the gateway at 
 IPAddress gateway(192,168,4,1);
 IPAddress subnet(255,255,255,0);
 

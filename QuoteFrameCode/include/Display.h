@@ -75,11 +75,10 @@ class Display
     static int CANVAS_WIDTH;
     static int CANVAS_HEIGHT;
     static int CANVAS_MARGIN;
-    static float LINE_DISTANCE; 
+
     static void Init();
     static void Draw();
     static void SetCanvasSize(int x, int y, int w, int h, int m);
-    static void SetLineDistance(int f);
     static void DrawCenteredText(String text, int y);
     static void ShowMessage(String message);
 
@@ -129,7 +128,6 @@ int Display::CANVAS_TOP = 0;
 int Display::CANVAS_WIDTH = display.width();
 int Display::CANVAS_HEIGHT = display.height();
 int Display::CANVAS_MARGIN = 60;
-float Display::LINE_DISTANCE = 20;
 
 
 /**************************************************
@@ -161,15 +159,6 @@ void Display::SetCanvasSize(int x, int y, int w, int h, int m)
     Display::CANVAS_WIDTH = w;
     Display::CANVAS_HEIGHT = h;
     Display::CANVAS_MARGIN = m;
-}
-
-
-/**************************************************
-* SetLineDistance(int f)
-*/
-void Display::SetLineDistance(int f)
-{
-    Display::LINE_DISTANCE = f;
 }
 
 
@@ -368,6 +357,7 @@ int Display::MapValue(int a1, int a2, int b1, int b2, int aVal)
 
 /**************************************************
 * CreateStringArrayFromText(String text)
+* text: the quote text
 * fills the global linesOfText Array with the text lines of the quote string
 */
 void Display::CreateStringArrayFromText(String text)
@@ -377,12 +367,16 @@ void Display::CreateStringArrayFromText(String text)
     // reset the lines of text array by filling all with an empty string
     Display::SetTextLine("");
 
-    // Exchange all german Umlaute in the text string
-    //Display::ExchangeGermanUnmlaute(text);
-
-    // get a random fonty style but always with the smallest size version first
+    // get a random font style but always with the smallest size version first
     FontSet randomFontSet = GetRandomFontSet();
     Display::SetTextLineFontSet(randomFontSet, 0);
+
+    // if quote is longer than 90 chars then change font to BebasNeue
+    if (text.length() > 90)
+    {
+        Serial.println("Quote is longer than 90 symbils: changed font to BebasNeue!");
+        Display::SetTextLineFontSet(fontSets[1], 0);
+    }
 
     // Handle manual or automatic line breaks
     if ( Display::StringContainsChar(text, '\n') )
@@ -845,6 +839,9 @@ void Display::DrawLinesOfTextCentered(quote q)
     int cntLinesOfText = Display::LinesOfTextCount();
 
     int quoteHeight = LinesOfTextTotalHeight();
+
+    // if an author is display display the quote a little higher
+    if ( q.author != "" ){ quoteHeight += 50; }
     //int quoteWidth = LinesOfTextTotalWidth();
     
     //int cntQuotes = sizeof QUOTES / sizeof QUOTES[0];
@@ -871,6 +868,8 @@ void Display::DrawLinesOfTextCentered(quote q)
         // set the current font for that line of text
         Display::SetDisplayFontFromLineOfText(i);
 
+        Serial.print("font:");
+        Serial.print(fontSetOfLines[i].name);
         Serial.print("fontsize:");
         Serial.print(fontSizeOfLines[i]);
         Serial.print("txt:");
@@ -893,20 +892,17 @@ void Display::DrawLinesOfTextCentered(quote q)
         u8g2Fonts.setCursor(x,y);
         u8g2Fonts.print(linesOfText[i]);
 
-        lastY += LINE_DISTANCE;
+        lastY += fontSetOfLines[i].line_distance;
     }
 
     // print author of quote if set
+    /*
     if ( q.author != "" )
     {
         int quoteLowerBorder = cy + quoteHeight/2;
         int spaceBeetweenQuoteAndLowerBorder = (CANVAS_TOP + CANVAS_HEIGHT) - quoteLowerBorder;
 
-        //Serial.println("spaceBeetweenQuoteAndLowerBorder");
-        //Serial.println(spaceBeetweenQuoteAndLowerBorder);
-
         u8g2Fonts.setFont(BebasNeue_Regular_35);
-        //ExchangeGermanUnmlaute(text);
 
         // boundary box window
         int16_t ta, td, tbw, tbh;
@@ -925,6 +921,26 @@ void Display::DrawLinesOfTextCentered(quote q)
             x = cx - tbw/2;
             y = quoteLowerBorder + spaceBeetweenQuoteAndLowerBorder/2;
         }
+        
+        u8g2Fonts.setCursor(x,y);
+        u8g2Fonts.print(q.author.c_str());
+    }
+    */
+
+    // print author of quote if set
+    if ( q.author != "" )
+    {
+        u8g2Fonts.setFont(BebasNeue_Regular_35);
+
+        tbw = u8g2Fonts.getUTF8Width(q.author.c_str()); // text box width
+        ta = u8g2Fonts.getFontAscent(); // positive
+        td = u8g2Fonts.getFontDescent(); // negative; in mathematicians view
+        tbh = ta - td; // text box height
+        lastY += tbh;
+
+        // center bounding box by transposition of origin:
+        int x = cx - tbw/2;
+        int y = lastY + 20;
         
         u8g2Fonts.setCursor(x,y);
         u8g2Fonts.print(q.author.c_str());
@@ -1036,11 +1052,11 @@ int Display::LinesOfTextTotalHeight()
     for (size_t i = 0; i < max; i++)
     {
         lastLineHeight = LinesOfTextLineHeight(i);
-        result += lastLineHeight + LINE_DISTANCE;
+        result += lastLineHeight + fontSetOfLines[i].line_distance;
     }
 
-    result -= lastLineHeight + LINE_DISTANCE;
-    result += lastLineHeight;
+    // remove the very last line distance
+    result -= fontSetOfLines[max-1].line_distance;
 
     //Serial.print("  total height: ");
     //Serial.println(result);    
@@ -1102,8 +1118,6 @@ void Display::SetBiggestFont()
         Serial.println(fontSetOfLines[i].name);
         Serial.print("  current size:");
         Serial.println(fontSizeOfLines[i]);
-
-        Display::DoesQuoteFitIntoWidth();
 
         if ( fontSizeOfLines[i] == 0 )
         {
@@ -1207,7 +1221,7 @@ void Display::DrawTestFont()
         u8g2Fonts.setCursor(x,y);
         u8g2Fonts.print(linesOfText[i]);
 
-        lastY += LINE_DISTANCE;
+        lastY += fontSetOfLines[i].line_distance;
     }
 }
 
