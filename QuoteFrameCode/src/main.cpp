@@ -8,7 +8,7 @@
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
 
-
+#include "Localization.h"
 #include "Config.h"
 #include "Quotes.h"
 #include "Display.h"
@@ -229,6 +229,16 @@ void setup() {
     // Serial port for debugging purposes
     Serial.begin(115200);
     while(!Serial);
+delay(1000); 
+    Loca::setLanguage(Loca::LANG_EN);
+    Serial.println("TEST: ");
+    Serial.println( Loca::S(STR_LANG) );
+    Serial.println( Loca::S(STR_WAIT) );
+    Serial.println( Loca::S(STR_SELECT_LANG) );
+    Loca::setLanguage(Loca::LANG_DE);
+    Serial.println( Loca::S(STR_LANG) );
+    Serial.println( Loca::S(STR_WAIT) );
+    Serial.println( Loca::S(STR_SELECT_LANG) );
 
     // Initialize SPIFFS
     Serial.println("main::setup() Initialize SPIFFS ...");

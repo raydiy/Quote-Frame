@@ -24,7 +24,7 @@ uint8_t fontSizeOfLines[10]; // an array for maximum 10 lines of text which hold
 #include "u8g2_fonts/BebasNeue_Regular_45.h"
 #include "u8g2_fonts/BebasNeue_Regular_57.h"
 #include "u8g2_fonts/BebasNeue_Regular_78.h"
-FontSet FontSet_BebasNeue = {"BebasNeue_Regular", 10, BebasNeue_Regular_78, BebasNeue_Regular_57, BebasNeue_Regular_45};
+FontSet FontSet_BebasNeue = {"BebasNeue_Regular", 15, BebasNeue_Regular_78, BebasNeue_Regular_57, BebasNeue_Regular_45};
 
 #include "u8g2_fonts/AlfaSlabOne_Regular_35.h"
 #include "u8g2_fonts/AlfaSlabOne_Regular_45.h"
