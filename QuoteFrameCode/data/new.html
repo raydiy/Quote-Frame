@@ -10,16 +10,16 @@
             <div class="col-sm-12 col-md-12">
 
                 <div class="card">
-                    <h3 class="section">Add new Quote</h3>
+                    <h3 class="section">%STR_ADD_NEW_QUOTE%</h3>
 
                     <form action="/save" class="section dark" method="POST">
                         <div class="input-group vertical">
-                            <label for="quote">Quote</label>
-                            <textarea rows="6" id="quote" name="quote" placeholder="New Quote here ..."></textarea>
+                            <label for="quote">%STR_QUOTE%</label>
+                            <textarea rows="6" id="quote" name="quote" placeholder="%STR_NEW_QUOTE_HERE%"></textarea>
                             <label for="author">Author</label>
-                            <input type="text" id="author" name="author" placeholder="Author here ... (optional)" />
+                            <input type="text" id="author" name="author" placeholder="%STR_NEW_AUTHOR_HERE%" />
                             <input type="hidden" id="new" name="new" value="true" />
-                            <input type="submit" class="primary" style="flex-basis: auto; height: 42px;" value="Save">
+                            <input type="submit" class="primary" style="flex-basis: auto; height: 42px;" value="%STR_SAVE%">
                         </div>
                     </form>
                 </div>

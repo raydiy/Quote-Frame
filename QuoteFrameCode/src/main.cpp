@@ -50,7 +50,7 @@ String processor(const String& var)
     if(var == "HTMLHEAD")
     {
         String q = "";
-        q += "<title>QuoteFrame</title>";
+        q += "<title>" + String(Loca::S(STR_QUOTEFRAME)) + "</title>";
         q += "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">";
         q += "<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">";
         q += "<link rel=\"icon\" href=\"data:,\">";
@@ -61,7 +61,7 @@ String processor(const String& var)
     {
         String q = "";
         q += "<header class=\"sticky\">";
-        q += "<a class=\"logo\" href=\"/\">QuoteFrame</a>";
+        q += "<a class=\"logo\" href=\"/\">" + String(Loca::S(STR_QUOTEFRAME)) + "</a>";
         q += "<a class=\"button col-sm col-md\" href=\"/new\">&#10133;</a>";
         q += "<a class=\"button col-sm col-md\" href=\"/reboot\">&#x21bb</a>";
         q += "<a class=\"button col-sm col-md\" href=\"/imexport\"><span class=\"icon-upload\"></span></a>";
@@ -91,9 +91,9 @@ String processor(const String& var)
         }
         else
         {
-            q += "<h3>No quotes found</h3>";
-            q += "<p>Add some quotes and restart SPRYGGKLOPPA.</p>";
-            q += "<a href=\"/new\" class=\"button primary col-sm\" style=\"text-align: center;\">Add your first quote!</a>";
+            q += "<h3>" + String(Loca::S(STR_NO_QUOTES_FOUND_1)) + "</h3>";
+            q += "<p>" + String(Loca::S(STR_ADD_SOME_QUOTES)) + "</p>";
+            q += "<a href=\"/new\" class=\"button primary col-sm\" style=\"text-align: center;\">" + String(Loca::S(STR_ADD_FIRST_QUOTE)) + "</a>";
         }
         return q;
     }
@@ -148,6 +148,47 @@ String processor(const String& var)
         if ( Settings::interval_days > 0 ) { return String("selected"); }
         return String("");
     }
+    else if(var == "SETTINGS_LANGUAGE_EN")
+    {
+        if ( Settings::language_id == Loca::LANG_EN ) { return String("checked"); }
+        return String("");
+    }
+    else if(var == "SETTINGS_LANGUAGE_DE")
+    {
+        if ( Settings::language_id == Loca::LANG_DE ) { return String("checked"); }
+        return String("");
+    }
+
+    // here we exchange the local strings in the HTML pages
+
+    // index
+    else if(var == "STR_QUOTES") { return Loca::S(STR_QUOTES); }
+
+    // settings
+    else if(var == "STR_SETTINGS") { return Loca::S(STR_SETTINGS); }
+    else if(var == "STR_SELECT_LANG") { return Loca::S(STR_SELECT_LANG); }
+    else if(var == "STR_QUOTE_INTERVAL") { return Loca::S(STR_QUOTE_INTERVAL); }
+    else if(var == "STR_SECONDS") { return Loca::S(STR_SECONDS); }
+    else if(var == "STR_MINUTES") { return Loca::S(STR_MINUTES); }
+    else if(var == "STR_HOURS") { return Loca::S(STR_HOURS); }
+    else if(var == "STR_DAYS") { return Loca::S(STR_DAYS); }
+    else if(var == "STR_SAVE") { return Loca::S(STR_SAVE); }
+
+    // new & edit
+    else if(var == "STR_ADD_NEW_QUOTE") { return Loca::S(STR_ADD_NEW_QUOTE); }
+    else if(var == "STR_EDIT_QUOTE") { return Loca::S(STR_EDIT_QUOTE); }
+    else if(var == "STR_QUOTE") { return Loca::S(STR_QUOTE); }
+    else if(var == "STR_NEW_QUOTE_HERE") { return Loca::S(STR_NEW_QUOTE_HERE); }
+    else if(var == "STR_NEW_AUTHOR_HERE") { return Loca::S(STR_NEW_AUTHOR_HERE); }
+
+    // import/export
+    else if(var == "STR_IMPORT_QUOTES") { return Loca::S(STR_IMPORT_QUOTES); }
+    else if(var == "STR_JSON_CODE_HERE") { return Loca::S(STR_JSON_CODE_HERE); }
+    else if(var == "STR_REPLACE_ALL_QUOTES") { return Loca::S(STR_REPLACE_ALL_QUOTES); }
+    else if(var == "STR_EXPORT_QUOTES") { return Loca::S(STR_EXPORT_QUOTES); }
+
+    // save
+    else if(var == "STR_QUOTE_SAVED") { return Loca::S(STR_QUOTE_SAVED); }
 
     return String();
 }
@@ -229,16 +270,6 @@ void setup() {
     // Serial port for debugging purposes
     Serial.begin(115200);
     while(!Serial);
-delay(1000); 
-    Loca::setLanguage(Loca::LANG_EN);
-    Serial.println("TEST: ");
-    Serial.println( Loca::S(STR_LANG) );
-    Serial.println( Loca::S(STR_WAIT) );
-    Serial.println( Loca::S(STR_SELECT_LANG) );
-    Loca::setLanguage(Loca::LANG_DE);
-    Serial.println( Loca::S(STR_LANG) );
-    Serial.println( Loca::S(STR_WAIT) );
-    Serial.println( Loca::S(STR_SELECT_LANG) );
 
     // Initialize SPIFFS
     Serial.println("main::setup() Initialize SPIFFS ...");
@@ -274,7 +305,7 @@ delay(1000);
     if ( MODE == MODE_CONFIG )
     {
 
-        Display::ShowMessage("Starting config mode ...");
+        Display::ShowMessage( Loca::S(STR_START_CONFIG_MODE) );
         
         // START ACCESS POINT MODE //////////////////////////////////////////////////
         // Init WiFi Access Point
@@ -420,7 +451,7 @@ void HandleRequestSettings(AsyncWebServerRequest *request)
         Settings::interval_hours = 0;
         Settings::interval_days = 0;
     
-        // get the value from the form
+        // get the intervall value from the form
         int value = request->getParam("interval_value", true)->value().toInt();
     
         if ( request->getParam("interval_unit", true)->value().toInt() == 0 ){ Settings::interval_seconds = value; }
@@ -428,6 +459,11 @@ void HandleRequestSettings(AsyncWebServerRequest *request)
         else if ( request->getParam("interval_unit", true)->value().toInt() == 2 ){ Settings::interval_hours = value; }
         else if ( request->getParam("interval_unit", true)->value().toInt() == 3 ){ Settings::interval_days = value; }
 
+        // gte the language ID
+        Settings::language_id = request->getParam("language_value", true)->value().toInt();
+        Loca::setLanguage( Settings::language_id );
+
+        // Save to SPIFFS
         Settings::SaveToSPIFFS();
 
         // immediate redirect to home 

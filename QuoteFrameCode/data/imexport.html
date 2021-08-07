@@ -10,12 +10,12 @@
             <div class="col-sm-12 col-md-12">
 
                 <div class="card">
-                    <h3 class="section">Import Quotes</h3>
+                    <h3 class="section">%STR_IMPORT_QUOTES%</h3>
 
                     <form action="/imexport" class="section dark" method="POST">
                         <div class="input-group vertical">
-                            <textarea rows="6" id="import" name="import" placeholder="JSON code here ..."></textarea>
-                            <label for="replace">Replace all?</label>
+                            <textarea rows="6" id="import" name="import" placeholder="%STR_JSON_CODE_HERE%"></textarea>
+                            <label for="replace">%STR_REPLACE_ALL_QUOTES%</label>
                             <input type="checkbox" id="replace" name="replace">
                             <input type="submit" class="primary" style="flex-basis: auto; height: 42px;" value="Import">
                         </div>
@@ -23,7 +23,7 @@
                 </div>
 
                 <div class="card">
-                    <h3 class="section">Export Quotes</h3>
+                    <h3 class="section">%STR_EXPORT_QUOTES%</h3>
                     <div class="section dark">
                         <div class="input-group vertical">
                             <a href="/imexport?export" class="button primary" style="text-align: center;">Export</a>

@@ -10,21 +10,30 @@
             <div class="col-sm-12 col-md-12">
 
                 <div class="card">
-                    <h3 class="section">Settings</h3>
+                    <h3 class="section">%STR_SETTINGS%</h3>
 
                     <form action="/settings" method="POST">
-                        <div class="input-group vertical">
-                            <label for="author">Quote Interval</label>
+                        <fieldset>
+                            <legend>%STR_SELECT_LANG%</legend>
+                            <input type="radio" id="en" name="language_value" value="0" %SETTINGS_LANGUAGE_EN%/>
+                            <label for="en">English</label><br>
+                            <input type="radio" id="de" name="language_value" value="1" %SETTINGS_LANGUAGE_DE%/>
+                            <label for="de">Deutsch</label><br>
+                        </fieldset>
+
+                        <fieldset>
+                            <legend>%STR_QUOTE_INTERVAL%</legend>
                             <input type="number" id="interval_value" name="interval_value" min="1" max="59" value="%SETTINGS_INTERVAL_VALUE%" />
                             <select name="interval_unit">
-                                <option value="0" %SETTINGS_INTERVAL_SECONDS%">Seconds</option>
-                                <option value="1" %SETTINGS_INTERVAL_MINUTES%>Minutes</option>
-                                <option value="2" %SETTINGS_INTERVAL_HOURS%>Hours</option>
-                                <option value="3" %SETTINGS_INTERVAL_DAYS%>Days</option>
+                                <option value="0" %SETTINGS_INTERVAL_SECONDS%">%STR_SECONDS%</option>
+                                <option value="1" %SETTINGS_INTERVAL_MINUTES%>%STR_MINUTES%</option>
+                                <option value="2" %SETTINGS_INTERVAL_HOURS%>%STR_HOURS%</option>
+                                <option value="3" %SETTINGS_INTERVAL_DAYS%>%STR_DAYS%</option>
                             </select>
-                            <input type="hidden" id="save" name="save" value="true" />
-                            <input type="submit" class="primary" style="flex-basis: auto; height: 42px;" value="Save">
-                        </div>
+                        </fieldset>
+
+                        <input type="hidden" id="save" name="save" value="true" />
+                        <input type="submit" class="primary" style="flex-basis: auto; height: 42px;" value="%STR_SAVE%">
                     </form>
                 </div>
 

@@ -406,7 +406,7 @@ quote Quotes::GetRandomQuote()
     // if no quotes
     if ( numberOfQuotes == 0 )
     {
-        result.txt = "No quotes found.\nRestart in config mode\nand add some quotes!";
+        result.txt = String(Loca::S(STR_NO_QUOTES_FOUND_1)) + String(Loca::S(STR_NO_QUOTES_FOUND_2)) + String(Loca::S(STR_NO_QUOTES_FOUND_3));
     }
 
     // 1 QUOTES

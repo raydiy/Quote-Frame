@@ -15,7 +15,7 @@ uint16_t LASTQUOTEID    = 0;                // the last quote id that has been d
 bool EXPORT_TO_JSON     = false;            // needed for the JSON export in config mode
 uint TIME_TO_DEEPSLEEP  = 120;              // in seconds, how long after a new quote gets loaded. 60*60*24 would be once per day. 60 would be every minute
 uint8_t MODE            = MODE_FRAME;       // MODE does contain the current active mode, per default the fraem starts in MODE_FRAME
-
+uint8_t LANGUAGE        = 0;                // Current Langauge ID. 0: EN, 1: DE
 
 IPAddress local_IP(192,168,4,1);            // the default IP adress & subnet mask you find the gateway at 
 IPAddress gateway(192,168,4,1);
@@ -37,6 +37,7 @@ class Settings
         static uint16_t interval_days;
         static byte inactivity_restart;
         static uint16_t last_quote_id;
+        static uint8_t language_id;
 
         static void SaveToSPIFFS();
         static void LoadFromSPIFFS();
@@ -48,6 +49,7 @@ class Settings
 // CLASS DEFINITIONS
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+// default values
 
 uint16_t Settings::interval_seconds = 0;
 uint16_t Settings::interval_minutes = 2;
@@ -55,6 +57,7 @@ uint16_t Settings::interval_hours = 0;
 uint16_t Settings::interval_days = 0;
 byte Settings::inactivity_restart = 5;
 uint16_t Settings::last_quote_id = 0;
+uint8_t Settings::language_id = Loca::LANG_EN;
 
 
 /**************************************************
@@ -68,7 +71,7 @@ void Settings::SaveToSPIFFS()
 
     Serial.println(F("Settings::SaveToSPIFFS()"));
 
-    StaticJsonDocument<96> doc;
+    StaticJsonDocument<128> doc;
 
     doc["interval_seconds"]     = Settings::interval_seconds;
     doc["interval_minutes"]     = Settings::interval_minutes;
@@ -76,6 +79,7 @@ void Settings::SaveToSPIFFS()
     doc["interval_days"]        = Settings::interval_days;
     doc["inactivity_restart"]   = Settings::inactivity_restart;
     doc["last_quote_id"]        = Settings::last_quote_id;
+    doc["language_id"]          = Settings::language_id;
 
     // serialize the object and send the result to Serial
     serializeJsonPretty(doc, Serial);
@@ -141,6 +145,7 @@ void Settings::LoadFromSPIFFS()
         Settings::interval_days         = doc["interval_days"].as<uint16_t>();
         Settings::inactivity_restart    = doc["inactivity_restart"].as<byte>();
         Settings::last_quote_id         = doc["last_quote_id"].as<uint16_t>();
+        Settings::language_id           = doc["language_id"].as<uint8_t>();
 
         Serial.println( F("#Settings loaded from SPIFFS: ") );
         Serial.print( "interval_seconds: " );
@@ -161,9 +166,16 @@ void Settings::LoadFromSPIFFS()
         Serial.print( "last_quote_id: " );
         Serial.print( String(Settings::last_quote_id) );
         Serial.println("");
+        Serial.print( "language_id: " );
+        Serial.print( String(Settings::language_id) );
+        Serial.println("");
 
         TIME_TO_DEEPSLEEP = Settings::GetIntervallInSeconds();
         LASTQUOTEID = Settings::last_quote_id;
+        LANGUAGE = Settings::language_id;
+        
+        // set loca language
+        Loca::setLanguage(LANGUAGE);
 
     }else{
         Serial.println(F("file settings.json does NOT exist. Using default values."));

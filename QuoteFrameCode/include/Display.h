@@ -272,48 +272,53 @@ void Display::DrawConfigInfos()
     display.setTextColor(GxEPD_BLACK);
     
     // draw headline
-    display.setFont(&FreeSans12pt7b);
-    Display::DrawCenteredText("RAYDIY's QuoteFrame", Display::CANVAS_TOP + 60);
+    u8g2Fonts.setFont(BebasNeue_Regular_57);
+    Display::DrawCenteredText(Loca::S(STR_RAYDIYS_QUOTEFRAME), Display::CANVAS_TOP + 70);
 
     // draw centered line
     int x = Display::CANVAS_LEFT + Display::CANVAS_WIDTH/2;
     int y = Display::CANVAS_TOP + 100;
     display.drawLine(x,y,x,y+237,GxEPD_BLACK);
 
-    x += Display::CANVAS_LEFT + 5;
+    x += Display::CANVAS_LEFT + 10;
     
     // draw SSID
     y += 30;
-    display.setFont(&FreeSans12pt7b);
-    display.setCursor(x,y);
-    display.print("SSID:");
+    u8g2Fonts.setFont(BebasNeue_Regular_35);
+    u8g2Fonts.setCursor(x,y);
+    u8g2Fonts.print( Loca::S(STR_SSID) );
 
-    y += 50;
+    y += 30;
     display.setFont(&FreeSans12pt7b);
     display.setCursor(x,y);
     display.print(String(AP_SSID));
 
     // draw PASSWORD
-    y += 50;
-    display.setFont(&FreeSans12pt7b);
-    display.setCursor(x,y);
-    display.print("PASSWORD:");
+    y += 58;
+    u8g2Fonts.setFont(BebasNeue_Regular_35);
+    u8g2Fonts.setCursor(x,y);
+    u8g2Fonts.print( Loca::S(STR_PASSWORD) );
 
-    y += 50;
+    y += 30;
     display.setFont(&FreeSans12pt7b);
     display.setCursor(x,y);
     display.print(String(AP_PASSWORD));
 
-    // draw IP
-    y += 50;
+    // draw IP ADDRESS
+    y += 58;
+    u8g2Fonts.setFont(BebasNeue_Regular_35);
+    u8g2Fonts.setCursor(x,y);
+    u8g2Fonts.print( Loca::S(STR_IP_ADDRESS) );
+
+    y += 30;
     display.setFont(&FreeSans12pt7b);
     display.setCursor(x,y);
-    display.print("IP: 192.168.4.1");
+    display.print("192.168.4.1");
 
 
     // print number of quotes at the bottom of screen
     uint16_t count = Quotes::GetNumberOfQuotes();
-    String quoteStats = "Number of quotes: " + String(count);
+    String quoteStats = Loca::S(STR_NUMBER_OF_QUOTES) + String(count);
     
     display.setFont(&FreeSans12pt7b);
 
@@ -1301,7 +1306,7 @@ void Display::ShowMessage(String message)
         u8g2Fonts.setFontDirection(0);                  // left to right (this is default)
         u8g2Fonts.setForegroundColor(GxEPD_BLACK);      // apply Adafruit GFX color
         u8g2Fonts.setBackgroundColor(GxEPD_WHITE);      // apply Adafruit GFX color
-        u8g2Fonts.setFont(BebasNeue_Regular_35);     // select u8g2 font from here: https://github.com/olikraus/u8g2/wiki/fntlistall
+        u8g2Fonts.setFont(BebasNeue_Regular_45);     // select u8g2 font from here: https://github.com/olikraus/u8g2/wiki/fntlistall
 
         //int16_t tw = u8g2Fonts.getUTF8Width(message.c_str()); // text box width
         int16_t ta = u8g2Fonts.getFontAscent(); // positive
