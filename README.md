@@ -1,4 +1,6 @@
-# SPRYGGKLOPPA
+![alt text](https://raydiy.de/wp-content/uploads/2021/03/spryggkloppa_01.jpg)
+
+# QUOTEFRAME SPRYGGKLOPPA
 
 This is the complete repository for RAYDIY's QUOTEFRAME (in Germany it's called SPRYGGKLOPPA) project.  
 It includes all the 3D printing files and code needed to build this digital quote frame.
