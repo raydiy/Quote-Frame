@@ -261,7 +261,7 @@ class CaptiveRequestHandler : public AsyncWebHandler
 
 
 
-
+int last_touch_pin_value = 256;
 
 /**************************************************
 * setup()
@@ -341,11 +341,31 @@ void setup() {
     }
 }
 
+
+/**************************************************
+* loop()
+*/
 void loop() 
 {
     if ( MODE == MODE_CONFIG )
     {
         dnsServer.processNextRequest();
+
+        // check for touch pin to restart frame
+        int touch_value = touchRead(TOUCH_PIN);
+
+        if ( touch_value < TOUCH_THRESHOLD )
+        {
+            Serial.println("TOUCH DETECTED");
+            Serial.print("last_touch_pin_value: ");
+            Serial.println(last_touch_pin_value);
+            Serial.print("touch_value: ");
+            Serial.println(touch_value);
+
+            ESP.restart();
+        }else{
+            last_touch_pin_value = touch_value;
+        }
     }
 }
 

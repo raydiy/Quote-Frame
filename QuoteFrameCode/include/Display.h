@@ -13,7 +13,7 @@
 
 
 // ESP32 DEVKIT C (WROOM 32) PINS
-/*
+
 static const uint8_t EPD_BUSY         = 4;  // to EPD BUSY
 static const uint8_t EPD_CS           = 5;  // (VSPI) to EPD CS
 static const uint8_t EPD_RST          = 16;  // to EPD RST
@@ -21,9 +21,10 @@ static const uint8_t EPD_DC           = 17;  // to EPD DC
 static const uint8_t EPD_SCK          = 18; // (VSPI) to EPD CLK
 static const uint8_t EPD_MISO         = 19; // (VSPI) Master-In Slave-Out not used, as no data from display
 static const uint8_t EPD_MOSI         = 23; // (VSPI) to EPD DIN
-*/
+
 
 // ESP32 ePulse (WROVER B) PINS
+/*
 static const uint8_t EPD_BUSY         = 4;  // to EPD BUSY
 static const uint8_t EPD_CS           = 5;  // (VSPI)to EPD CS
 static const uint8_t EPD_RST          = 21; // to EPD RST
@@ -31,7 +32,7 @@ static const uint8_t EPD_DC           = 22; // to EPD DC
 static const uint8_t EPD_SCK          = 18; // (VSPI) to EPD CLK
 static const uint8_t EPD_MISO         = 19; // (VSPI) Master-In Slave-Out not used, as no data from display
 static const uint8_t EPD_MOSI         = 23; // (VSPI) to EPD DIN
-
+*/
 
 #if defined(ESP32)
 // copy constructor for your e-paper from GxEPD2_Example.ino, and for AVR needed #defines

@@ -3,8 +3,8 @@
 #define MODE_FRAME 0                        // mode 0 is normal quotes mode
 #define MODE_CONFIG 1                       // mode 1 is config mode
 
-#define TOUCH_THRESHOLD 40                  // Define touch sensitivity. Greater the value, more the sensitivity. 20
-#define TOUCH_PIN 33                        // the pin of the touch sensor, default like in YouTube Video is 32
+#define TOUCH_THRESHOLD 30                  // Define touch sensitivity. Greater the value, more the sensitivity. 20
+#define TOUCH_PIN 32                        // the pin of the touch sensor, default like in YouTube Video is 32. eThing Pulse uses 33.
 #define SCREEN_ROTATION 0                   // if for some reasons you want to rotate the display
 
 
