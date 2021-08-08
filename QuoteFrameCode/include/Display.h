@@ -10,7 +10,8 @@
 #include <GxEPD2_7C.h>
 #include "myFonts.h"
 
-
+// /////////////////////////////////////////////////////////////
+// Change the PIN settiungs here
 
 // ESP32 DEVKIT C (WROOM 32) PINS
 

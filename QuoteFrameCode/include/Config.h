@@ -5,7 +5,7 @@
 
 #define TOUCH_THRESHOLD 30                  // Define touch sensitivity. Greater the value, more the sensitivity. 20
 #define TOUCH_PIN 32                        // the pin of the touch sensor, default like in YouTube Video is 32. eThing Pulse uses 33.
-#define SCREEN_ROTATION 0                   // if for some reasons you want to rotate the display
+#define SCREEN_ROTATION 0                   // if for some reasons you want to rotate the display, use 0 or 2
 
 
 const char *AP_SSID     = "QuoteFrame";     // the SSID of the gateway
