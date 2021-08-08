@@ -1,6 +1,6 @@
 ![alt text](https://raydiy.de/wp-content/uploads/2021/03/spryggkloppa_01.jpg)
 
-# QUOTEFRAME SPRYGGKLOPPA
+# QUOTEFRAME / SPRYGGKLOPPA
 
 This is the complete repository for RAYDIY's QUOTEFRAME (in Germany it's called SPRYGGKLOPPA) project.  
 It includes all the 3D printing files and code needed to build this digital quote frame.
@@ -98,12 +98,25 @@ So if you use these links you help RAYDIY to stay alive – at no costs. Thank y
 
 ## Q&A
 
-### Where do I change the pin settings?
+#### Where do I change the pin settings?
 If you want to use a different pin settings, open the file **include/Display.h**  
 You will find the pin settings at the top of the file.
 
-### Are there other configurations I can change?
+#### Are there other configurations I can change?
 If you like to, you can change some settings in the file **include/Config.h**
+
+#### How do I export (backup) my quotes?
+1. Start config mode and goto import/export page.  
+2. Scroll down to the **export section** and press export.  
+Now all the quotes get exported to the textarea in a JSON format.
+3. Copy this text and paste it somewhere safe.
+
+#### How do I import my quotes?
+1. Start config mode and goto import/export page. 
+2. In the **import section** paste the JSON code into the textarea.  
+If you want to replace all the current quotes on the frame, check the checkbox.  
+Otherwise the new set of quotes gets appended.  
+3. Press **Import** button to start the import process.
 
 ## Support the project ❤️
 Do you like this Project?
