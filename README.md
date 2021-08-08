@@ -5,7 +5,42 @@ It includes all the 3D printing files and code needed to build this digital quot
 
 More informations here: https://raydiy.de/spryggkloppa-digitaler-spruechekalender/
 
-# 3rd Party Resources
+## Features
+
+- display a set of quotes, sayings, motivationals etc. on an ePaper driven display
+- let the displayed text change at an interval you like (every X seconds or minutes or hours or days)
+- the quotes are automatically formatted to fit on the screen
+- a random font is used to display the quotes
+- random font sizes are used to make the quotes more diverse and more appealing
+- can be powered with batteries
+- config mode is started via touch on a touch sensor
+- config mode start a WiFi access point – jus log in an do your changes in the settings
+
+**In config mode you can:**
+
+- add/edit/delete quotes
+- export and import the quotes with a JSON format (for backups or bigger edits)
+- change the language for the config mode
+- change the quote change interval from X seconds to X days
+
+## Updates
+
+#### v1.60 
+**Attention:** If you are updating: for this update you will need to re-upload the html files in the data folder to SPIFFS file system.
+This will erase your quotes! Because the quotes are also saved in the SPIFFS files system! 
+You can export your quotes to JSON **BEFORE** you upload the new code. After the new version is installed you can import this JSON in config mode back into the frame.
+
+- NEW: replaced current fonts with u8g2 font system
+- NEW: three Google Fonts converted to u8g2 compatible format and added to project
+- NEW: added support for special characters like german ÄÖÜ (due to u8g2)
+- NEW: added localization for german language, you can select the language in the settings screen
+- ENHANCED: the touch sensor can now be used to restart the frame from config mode back into normal mode
+- ENHANCED: fall back font for long quotes. If quotes are longer than 90 symbols, the used font will always be the space saving BebasNeue to ensure it fits on the screen.
+
+#### v1.51 first official release
+
+
+## 3rd Party Resources
 
 The following third party resources are used. Thank you!
 
@@ -13,9 +48,10 @@ The following third party resources are used. Thank you!
 - [ESP Async WebServer by Hristo Gochkov](https://github.com/me-no-dev/ESPAsyncWebServer.git)
 - [ArduinoJson by Benoit Blanchon](https://github.com/bblanchon/ArduinoJson)
 - [U8g2_for_Adafruit_GFX by Oliver Kraus](https://github.com/olikraus/U8g2_for_Adafruit_GFX.git)
+- [Google Fonts Project](https://fonts.google.com/)
 - [mini.css by Angelos Chalaris](https://minicss.org/)
 
-# Project Folders
+## Project Folders
 
 The following folders are in the download archive:
 
