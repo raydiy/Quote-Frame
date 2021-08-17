@@ -38,8 +38,9 @@ void DeepSleep_PrintWakeupTouchpad();
 void DebugPrintRequestParameter(AsyncWebServerRequest *request);
 bool InitWiFiAccessPoint();
 void TouchEndConfigMode_Callback();
-
-
+void FillTouchValuesArray(int value);
+int MadianFromArray(int* array, int size);
+void PrintArray(int* arr, int size);
 
 
 // Replaces placeholder with button section in your web page
@@ -260,8 +261,9 @@ class CaptiveRequestHandler : public AsyncWebHandler
 };
 
 
-
-int last_touch_pin_value = 256;
+#define TOUCH_ARRAY_SIZE 100
+int touch_value_counter = 0;
+int touch_values[TOUCH_ARRAY_SIZE];
 
 /**************************************************
 * setup()
@@ -351,20 +353,39 @@ void loop()
     {
         dnsServer.processNextRequest();
 
-        // check for touch pin to restart frame
-        int touch_value = touchRead(TOUCH_PIN);
+        // get current touch value from touch sensor wire 
+        int touch_value = touchRead(TOUCH_PIN); 
 
-        if ( touch_value < TOUCH_THRESHOLD )
+        // fill the touch_values array
+        FillTouchValuesArray(touch_value);
+
+        // if array is filled create an average median from all values
+        if (touch_value_counter == TOUCH_ARRAY_SIZE)
         {
-            Serial.println("TOUCH DETECTED");
-            Serial.print("last_touch_pin_value: ");
-            Serial.println(last_touch_pin_value);
-            Serial.print("touch_value: ");
-            Serial.println(touch_value);
+            // create median
+            int median_touch_value = MadianFromArray(touch_values, TOUCH_ARRAY_SIZE);
+            
 
-            ESP.restart();
-        }else{
-            last_touch_pin_value = touch_value;
+            // check for touch pin to restart frame
+
+            //Serial.print("touch_value/median_touch_value/THRESHOLD: ");
+            //Serial.print(touch_value);
+            //Serial.print("/");
+            //Serial.print(median_touch_value);
+            //Serial.print("/");
+            //Serial.println(TOUCH_THRESHOLD);
+
+            if ( median_touch_value < TOUCH_THRESHOLD )
+            {
+                Serial.println("TOUCH DETECTED");
+                //Serial.print("last_touch_pin_value: ");
+                //Serial.println(last_touch_pin_value);
+                //PrintArray(touch_values, TOUCH_ARRAY_SIZE);
+                //Serial.print("median_touch_value: ");
+                //Serial.println(median_touch_value);
+
+                ESP.restart();
+            }
         }
     }
 }
@@ -374,6 +395,68 @@ void loop()
 ///////////////////////////////////////////////////////////////
 // FUNCTION DEFINITIONS
 ///////////////////////////////////////////////////////////////
+
+
+/**************************************************
+* FillTouchValuesArray(int value)
+* Fills the touch_values array with new values from the touch sensor
+* This array is needed to create a moving avaerage to remove spikes from touch sensor
+* to prevent fals positiveve touches
+*/
+void FillTouchValuesArray(int value)
+{
+    if (touch_value_counter < TOUCH_ARRAY_SIZE)
+    {
+        touch_values[touch_value_counter] = value;
+        touch_value_counter++;
+    }
+    else
+    {
+        // copy array to the left without the very first one that gest overwritten
+        for(size_t i=0;i<TOUCH_ARRAY_SIZE-1;i++)
+        {
+            touch_values[i] = touch_values[i+1]; //move all elements to the left except first one
+        }
+
+        // insert new value to the last array element
+        touch_values[TOUCH_ARRAY_SIZE-1] = value;
+    }
+}
+
+
+/**************************************************
+* MadianFromArray(int* arr, int size)
+* Creates a median average from an int array
+*/
+int MadianFromArray(int* arr, int size)
+{
+    // create median
+    int median = 0;
+    for (size_t i = 0; i < size; i++)
+    {
+        median += arr[i];
+    }
+    median = median/size;
+    
+    return median;
+}
+
+
+/**************************************************
+* PrintArray(int* arr, int size)
+* Prints an integer Array to console
+*/
+void PrintArray(int* arr, int size)
+{
+    Serial.println( "PrintArray() ---------------" );
+
+    for(size_t i=0;i<size;i++)
+    {
+        Serial.print(i);
+        Serial.print(": ");
+        Serial.println( arr[i] );
+    }
+}
 
 
 /**************************************************
