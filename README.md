@@ -75,7 +75,7 @@ So if you use these links you help RAYDIY to stay alive – at no costs. Thank y
 
 * [IKEA RIBBA Frame](https://geni.us/8dEyD)
 * [7.5" ePaper Display Waveshare with HAT](https://geni.us/FhP4Ga6)
-* [ESP32](https://geni.us/08mKhC4)
+* [ESP32 unverlötet](https://amzn.to/3Zxoino)
 * [Silver wire, 0,6mm](https://geni.us/1WwKYS)
 * [Stranded wire silicone insulation](https://amzn.to/3lhfChR)
 * [Dupont sockets and connectors](https://geni.us/DBqo)
